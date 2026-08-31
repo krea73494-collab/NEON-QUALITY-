@@ -19,6 +19,7 @@
   <div class="download" id="download"></div>
   <div class="note">Remux only: video/audio streams are copied without re-encoding. TikTok may still apply its own server-side compression after upload.</div>
 </div>
+<script src="./encoder/core/ffmpeg-core.js"></script>
 <script type="module">
 import { createFFmpeg } from './encoder/ffmpeg.js';
 
@@ -47,13 +48,17 @@ async function loadFFmpeg(){
 }
 
 function choose(file){
-  if(!file || !file.type.startsWith('video/'))return;
-  selectedFile=file; start.disabled=false; download.style.display='none';
+  if(!file)return;
+  const isVideo=file.type.startsWith('video/') || /\.(mp4|mov|m4v|webm|mkv|mpeg|mpg)$/i.test(file.name);
+  if(!isVideo){ alert('Please choose a video file (MP4, MOV, WEBM, MKV, MPEG).'); return; }
+  selectedFile=file; start.disabled=false; start.textContent='PREPARE VIDEO'; download.style.display='none';
   info.style.display='block';
   info.innerHTML=`<b>File:</b> ${file.name}<br><b>Size:</b> ${(file.size/1048576).toFixed(2)} MB`;
 }
-fileInput.addEventListener('change',e=>choose(e.target.files[0]));
-drop.addEventListener('dragover',e=>{e.preventDefault();});
+fileInput.addEventListener('change',e=>choose(e.target.files && e.target.files[0]));
+fileInput.addEventListener('click',e=>e.stopPropagation());
+drop.addEventListener('dragover',e=>{e.preventDefault();drop.style.borderColor='#7777aa';});
+drop.addEventListener('dragleave',()=>{drop.style.borderColor='';});
 drop.addEventListener('drop',e=>{e.preventDefault();choose(e.dataTransfer.files[0]);});
 
 start.addEventListener('click',async()=>{
