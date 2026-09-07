@@ -930,18 +930,21 @@ startBtn.addEventListener(
       percent.textContent =
         "30%";
 
-      function buildReencodeArgs(inputName, outputName) {
-  return [
-    '-i', inputName,
-    '-c:v', 'libx264',
-    '-preset', 'ultrafast',
-    '-crf', '18',
-    '-max_muxing_queue_size', '1024',
-    '-threads', String(getOptimalThreads()),
-    '-movflags', '+faststart',
-    outputName,
-  ];
-}
+      const inputName = guessInputName(selectedFile);
+const outputName = 'Neon_base.mp4';
+
+ffmpeg.FS(
+  'writeFile',
+  inputName,
+  await fetchFile(selectedFile)
+);
+
+const args = buildRemuxArgs(
+  inputName,
+  outputName
+);
+
+await ffmpeg.run(...args);}
       progressBar.style.width =
         "90%";
 
