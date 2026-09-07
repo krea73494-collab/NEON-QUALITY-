@@ -930,26 +930,18 @@ startBtn.addEventListener(
       percent.textContent =
         "30%";
 
-      await ffmpeg.run(
-  '-i', 'input.mp4',
-
-  // Keep original video exactly
-  '-map', '0:v:0',
-  '-c:v', 'copy',
-
-  // Keep ALL original audio tracks
-  '-map', '0:a?',
-  '-c:a', 'copy',
-
-  // Keep metadata
-  '-map_metadata', '0',
-
-  // MP4 optimized
-  '-movflags', '+faststart',
-
-  output
-);
-
+      function buildReencodeArgs(inputName, outputName) {
+  return [
+    '-i', inputName,
+    '-c:v', 'libx264',
+    '-preset', 'ultrafast',
+    '-crf', '18',
+    '-max_muxing_queue_size', '1024',
+    '-threads', String(getOptimalThreads()),
+    '-movflags', '+faststart',
+    outputName,
+  ];
+}
       progressBar.style.width =
         "90%";
 
