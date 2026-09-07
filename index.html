@@ -930,24 +930,34 @@ startBtn.addEventListener(
       percent.textContent =
         "30%";
 
-      // Single configuration using your high-quality dynamic settings
       await ffmpeg.run(
-        '-i', 'input.mp4',
-        '-vf', 'scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:black,flags=lanczos',
-        '-c:v', 'libx264',
-        '-preset', 'fast',
-        '-profile:v', 'high',
-        '-level', '4.2',
-        '-crf', '17',
-        '-maxrate', '18M',
-        '-bufsize', '36M',
-        '-pix_fmt', 'yuv420p',
-        '-r', '60',
-        '-c:a', 'aac',
-        '-b:a', '192k',
-        '-movflags', '+faststart',
-        output
-      );
+  '-i', 'input.mp4',
+
+  // VIDEO
+  '-map', '0:v:0',
+  '-c:v', 'libx264',
+  '-preset', 'medium',
+  '-profile:v', 'high',
+  '-level', '4.2',
+  '-crf', '16',
+  '-pix_fmt', 'yuv420p',
+
+  // DO NOT FORCE FPS
+  // Original FPS will be preserved
+
+  // AUDIO
+  '-map', '0:a?',
+  '-c:a', 'aac',
+  '-b:a', '192k',
+
+  // MP4
+  '-movflags', '+faststart',
+
+  // Metadata
+  '-map_metadata', '0',
+
+  output
+);
 
       progressBar.style.width =
         "90%";
