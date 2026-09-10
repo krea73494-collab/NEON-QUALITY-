@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
   <script src="coi-serviceworker.js"></script>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>NEON BASE — Video Compressor</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
+  <title>NEON BASE — Video Compressor</title>
+
+  <!-- FFmpeg.wasm 0.11.6 -->
+  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
 
 <style>
+
 *{
   box-sizing:border-box;
   margin:0;
@@ -35,6 +39,7 @@ body{
 }
 
 /* GALAXY */
+
 .galaxy{
   position:fixed;
   inset:0;
@@ -72,11 +77,15 @@ body{
 }
 
 @keyframes spin{
-  to{transform:translate(-50%,-50%) rotate(360deg)}
+  to{
+    transform:translate(-50%,-50%) rotate(360deg)
+  }
 }
 
 @keyframes spin2{
-  to{transform:translate(-50%,-50%) rotate(335deg)}
+  to{
+    transform:translate(-50%,-50%) rotate(335deg)
+  }
 }
 
 .stars{
@@ -92,11 +101,16 @@ body{
 }
 
 @keyframes stars{
-  from{transform:translateY(0)}
-  to{transform:translateY(-110px)}
+  from{
+    transform:translateY(0)
+  }
+  to{
+    transform:translateY(-110px)
+  }
 }
 
 /* HEADER */
+
 header{
   width:min(1100px,92%);
   margin:auto;
@@ -161,6 +175,7 @@ header{
 }
 
 /* MAIN */
+
 main{
   width:min(900px,92%);
   margin:35px auto 80px;
@@ -198,6 +213,7 @@ h1 span{
 }
 
 /* STEPS */
+
 .steps{
   display:flex;
   justify-content:center;
@@ -213,6 +229,7 @@ h1 span{
 }
 
 /* CARD */
+
 .card{
   background:rgba(15,15,15,.92);
   border:1px solid var(--line);
@@ -284,6 +301,7 @@ input[type=file]{
 }
 
 /* FILE */
+
 .file-box{
   display:none;
   margin-top:20px;
@@ -305,6 +323,7 @@ input[type=file]{
 }
 
 /* OPTIONS */
+
 .options{
   display:none;
   margin-top:20px;
@@ -315,6 +334,7 @@ input[type=file]{
 }
 
 /* PROCESS */
+
 .processing{
   display:none;
   text-align:center;
@@ -332,7 +352,9 @@ input[type=file]{
 }
 
 @keyframes load{
-  to{transform:rotate(360deg)}
+  to{
+    transform:rotate(360deg)
+  }
 }
 
 .progress{
@@ -357,6 +379,7 @@ input[type=file]{
 }
 
 /* RESULT */
+
 .result{
   display:none;
   text-align:center;
@@ -428,6 +451,7 @@ input[type=file]{
 }
 
 /* FOOTER */
+
 footer{
   text-align:center;
   color:#666;
@@ -470,7 +494,9 @@ footer b{
   .steps{
     gap:15px;
   }
+
 }
+
 </style>
 </head>
 
@@ -512,9 +538,19 @@ footer b{
 </section>
 
 <div class="steps">
-  <div class="active">01 VIDEO</div>
-  <div>02 PROCESS</div>
-  <div>03 DOWNLOAD</div>
+
+  <div class="active">
+    01 VIDEO
+  </div>
+
+  <div>
+    02 PROCESS
+  </div>
+
+  <div>
+    03 DOWNLOAD
+  </div>
+
 </div>
 
 <div class="card">
@@ -548,10 +584,14 @@ footer b{
 
   </div>
 
+
   <input
     id="fileInput"
     type="file"
     accept="video/*">
+
+
+  <!-- FILE -->
 
   <div id="fileBox" class="file-box">
 
@@ -567,22 +607,30 @@ footer b{
 
   </div>
 
+
   <!-- OPTIONS -->
 
-  <div id="options" class="options">
+  <div
+    id="options"
+    class="options">
 
     <button
       type="button"
       id="startBtn"
       class="btn start">
+
       Start processing
+
     </button>
 
   </div>
 
+
   <!-- PROCESSING -->
 
-  <div id="processing" class="processing">
+  <div
+    id="processing"
+    class="processing">
 
     <div class="loader"></div>
 
@@ -606,14 +654,19 @@ footer b{
     <div
       id="percent"
       class="percent">
+
       0%
+
     </div>
 
   </div>
 
+
   <!-- RESULT -->
 
-  <div id="result" class="result">
+  <div
+    id="result"
+    class="result">
 
     <div class="check">
       ✓
@@ -643,8 +696,11 @@ footer b{
       <p
         class="hashtags"
         style="margin-top:12px">
+
         Support NEON BASE<br>
+
         #neonbase #neonbasemethod
+
       </p>
 
     </div>
@@ -653,14 +709,18 @@ footer b{
       id="downloadBtn"
       class="btn download"
       download="Neon_base.mp4">
+
       Download video
+
     </a>
 
     <button
       type="button"
       id="resetBtn"
       class="btn reset">
+
       Process another video
+
     </button>
 
   </div>
@@ -670,11 +730,19 @@ footer b{
 </main>
 
 <footer>
+
   <b>NEON BASE</b> · Your video stays on your device.
+
 </footer>
 
 
 <script>
+
+/* =====================================================
+   NEON BASE
+   FFMPEG.WASM 0.11.6
+===================================================== */
+
 
 /* =========================
    ELEMENTS
@@ -701,20 +769,20 @@ const fileSize =
 const options =
   document.getElementById("options");
 
-const processing =
-  document.getElementById("processing");
-
-const result =
-  document.getElementById("result");
-
 const startBtn =
   document.getElementById("startBtn");
+
+const processing =
+  document.getElementById("processing");
 
 const progressBar =
   document.getElementById("progressBar");
 
 const percent =
   document.getElementById("percent");
+
+const result =
+  document.getElementById("result");
 
 const downloadBtn =
   document.getElementById("downloadBtn");
@@ -728,75 +796,120 @@ const resetBtn =
 ========================= */
 
 let selectedFile = null;
+
 let ffmpeg = null;
+
 let outputUrl = null;
 
 
 /* =========================
-   SELECT VIDEO
+   SELECT VIDEO BUTTON
 ========================= */
 
-selectVideoBtn.addEventListener("click", (e)=>{
-  e.stopPropagation();
-  fileInput.click();
-});
+selectVideoBtn.addEventListener(
+  "click",
+  function(e){
 
-uploadArea.addEventListener("click", ()=>{
-  fileInput.click();
-});
+    e.stopPropagation();
 
-fileInput.addEventListener("change", e=>{
+    fileInput.click();
 
-  const file =
-    e.target.files &&
-    e.target.files[0];
-
-  if(!file){
-    return;
   }
-
-  selectFile(file);
-
-});
+);
 
 
 /* =========================
-   DRAG & DROP
+   UPLOAD AREA CLICK
 ========================= */
 
-uploadArea.addEventListener("dragover", e=>{
+uploadArea.addEventListener(
+  "click",
+  function(){
 
-  e.preventDefault();
+    fileInput.click();
 
-  uploadArea.classList.add("drag");
-
-});
-
-
-uploadArea.addEventListener("dragleave", ()=>{
-
-  uploadArea.classList.remove("drag");
-
-});
+  }
+);
 
 
-uploadArea.addEventListener("drop", e=>{
+/* =========================
+   FILE INPUT
+========================= */
 
-  e.preventDefault();
+fileInput.addEventListener(
+  "change",
+  function(e){
 
-  uploadArea.classList.remove("drag");
+    const file =
+      e.target.files &&
+      e.target.files[0];
 
-  const file =
-    e.dataTransfer.files &&
-    e.dataTransfer.files[0];
+    if(!file){
 
-  if(file){
+      return;
+
+    }
 
     selectFile(file);
 
   }
+);
 
-});
+
+/* =========================
+   DRAG OVER
+========================= */
+
+uploadArea.addEventListener(
+  "dragover",
+  function(e){
+
+    e.preventDefault();
+
+    uploadArea.classList.add("drag");
+
+  }
+);
+
+
+/* =========================
+   DRAG LEAVE
+========================= */
+
+uploadArea.addEventListener(
+  "dragleave",
+  function(){
+
+    uploadArea.classList.remove("drag");
+
+  }
+);
+
+
+/* =========================
+   DROP
+========================= */
+
+uploadArea.addEventListener(
+  "drop",
+  function(e){
+
+    e.preventDefault();
+
+    uploadArea.classList.remove("drag");
+
+    const file =
+      e.dataTransfer.files &&
+      e.dataTransfer.files[0];
+
+    if(file){
+
+      selectFile(file);
+
+    }
+
+  }
+);
 
 
 /* =========================
@@ -807,7 +920,9 @@ function selectFile(file){
 
   if(!file.type.startsWith("video/")){
 
-    alert("Please select a video file.");
+    alert(
+      "Please select a video file."
+    );
 
     return;
 
@@ -833,50 +948,236 @@ function selectFile(file){
 }
 
 
-/* =========================
+/* =====================================================
    LOAD FFMPEG
-========================= */
+===================================================== */
 
 async function loadFFmpeg(){
 
-  if(ffmpeg){
+  /* Already loaded */
 
-    if(ffmpeg.isLoaded()){
+  if(
+    ffmpeg &&
+    ffmpeg.isLoaded()
+  ){
 
-      return ffmpeg;
-
-    }
+    return ffmpeg;
 
   }
+
+
+  /* Check library */
+
+  if(
+    typeof FFmpeg === "undefined"
+  ){
+
+    throw new Error(
+      "FFmpeg library was not loaded."
+    );
+
+  }
+
 
   const {
     createFFmpeg
   } = FFmpeg;
 
-  ffmpeg = createFFmpeg({
-    log:false
-  });
+
+  /* Create FFmpeg */
+
+  ffmpeg =
+    createFFmpeg({
+
+      log:true
+
+    });
+
+
+  /* Load WASM */
 
   await ffmpeg.load();
+
 
   return ffmpeg;
 
 }
 
 
-/* =========================
-   PROCESS VIDEO
-========================= */
+/* =====================================================
+   GET INPUT NAME
+===================================================== */
+
+function getInputName(file){
+
+  const name =
+    file.name.toLowerCase();
+
+
+  if(
+    name.endsWith(".mov")
+  ){
+
+    return "input.mov";
+
+  }
+
+
+  if(
+    name.endsWith(".mkv")
+  ){
+
+    return "input.mkv";
+
+  }
+
+
+  if(
+    name.endsWith(".webm")
+  ){
+
+    return "input.webm";
+
+  }
+
+
+  return "input.mp4";
+
+}
+
+
+/* =====================================================
+   HIGH QUALITY ENCODING COMMAND
+===================================================== */
+
+function buildHighQualityArgs(
+  inputName,
+  outputName
+){
+
+  return [
+
+    /* INPUT */
+
+    "-i",
+    inputName,
+
+
+    /* VIDEO STREAM */
+
+    "-map",
+    "0:v:0",
+
+
+    /* FIRST AUDIO STREAM */
+
+    "-map",
+    "0:a:0?",
+
+
+    /* H.264 */
+
+    "-c:v",
+    "libx264",
+
+
+    /*
+      SLOW PRESET
+
+      Better compression efficiency
+      than ultrafast.
+    */
+
+    "-preset",
+    "slow",
+
+
+    /*
+      HIGH QUALITY
+
+      Lower CRF = higher quality.
+    */
+
+    "-crf",
+    "16",
+
+
+    /* H.264 PROFILE */
+
+    "-profile:v",
+    "high",
+
+    "-level",
+    "5.2",
+
+
+    /* COMPATIBLE PIXEL FORMAT */
+
+    "-pix_fmt",
+    "yuv420p",
+
+
+    /*
+      DO NOT FORCE 1080p.
+      DO NOT FORCE 60 FPS.
+    */
+
+
+    /* HIGH QUALITY BITRATE LIMIT */
+
+    "-maxrate",
+    "80M",
+
+    "-bufsize",
+    "160M",
+
+
+    /* AUDIO */
+
+    "-c:a",
+    "aac",
+
+    "-b:a",
+    "192k",
+
+
+    /* MP4 FAST START */
+
+    "-movflags",
+    "+faststart",
+
+
+    /* KEEP ORIGINAL METADATA */
+
+    "-map_metadata",
+    "0",
+
+
+    /* OUTPUT */
+
+    outputName
+
+  ];
+
+}
+
+
+/* =====================================================
+   START PROCESSING
+===================================================== */
 
 startBtn.addEventListener(
   "click",
-  async()=>{
+  async function(){
 
     if(!selectedFile){
 
       return;
 
     }
+
+
+    /* UI */
 
     uploadArea.style.display =
       "none";
@@ -890,6 +1191,7 @@ startBtn.addEventListener(
     processing.style.display =
       "block";
 
+
     progressBar.style.width =
       "5%";
 
@@ -898,6 +1200,10 @@ startBtn.addEventListener(
 
 
     try{
+
+      /* ==========================================
+         LOAD FFMPEG
+      ========================================== */
 
       const engine =
         await loadFFmpeg();
@@ -910,17 +1216,38 @@ startBtn.addEventListener(
         "15%";
 
 
-      const input =
-        "input.mp4";
+      /* ==========================================
+         INPUT / OUTPUT
+      ========================================== */
 
-      const output =
+      const inputName =
+        getInputName(selectedFile);
+
+      const outputName =
         "Neon_base.mp4";
+
+
+      /* ==========================================
+         WRITE VIDEO INTO FFMPEG MEMORY
+      ========================================== */
+
+      progressBar.style.width =
+        "20%";
+
+      percent.textContent =
+        "20%";
+
+
+      const fileData =
+        await FFmpeg.fetchFile(
+          selectedFile
+        );
 
 
       engine.FS(
         "writeFile",
-        input,
-        await FFmpeg.fetchFile(selectedFile)
+        inputName,
+        fileData
       );
 
 
@@ -930,21 +1257,59 @@ startBtn.addEventListener(
       percent.textContent =
         "30%";
 
-      const inputName = guessInputName(selectedFile);
-const outputName = 'Neon_base.mp4';
 
-ffmpeg.FS(
-  'writeFile',
-  inputName,
-  await fetchFile(selectedFile)
-);
+      /* ==========================================
+         BUILD HIGH QUALITY COMMAND
+      ========================================== */
 
-const args = buildRemuxArgs(
-  inputName,
-  outputName
-);
+      const args =
+        buildHighQualityArgs(
+          inputName,
+          outputName
+        );
 
-await ffmpeg.run(...args);}
+
+      console.log(
+        "================================"
+      );
+
+      console.log(
+        "NEON BASE FFMPEG START"
+      );
+
+      console.log(
+        "Input:",
+        inputName
+      );
+
+      console.log(
+        "Output:",
+        outputName
+      );
+
+      console.log(
+        "Arguments:",
+        args
+      );
+
+      console.log(
+        "================================"
+      );
+
+
+      /* ==========================================
+         RUN FFMPEG
+      ========================================== */
+
+      await engine.run(
+        ...args
+      );
+
+
+      /* ==========================================
+         ENCODE COMPLETE
+      ========================================== */
+
       progressBar.style.width =
         "90%";
 
@@ -952,12 +1317,32 @@ await ffmpeg.run(...args);}
         "90%";
 
 
+      /* ==========================================
+         READ OUTPUT
+      ========================================== */
+
       const data =
         engine.FS(
           "readFile",
-          output
+          outputName
         );
 
+
+      if(
+        !data ||
+        !data.length
+      ){
+
+        throw new Error(
+          "FFmpeg created an empty output file."
+        );
+
+      }
+
+
+      /* ==========================================
+         CREATE MP4 BLOB
+      ========================================== */
 
       const blob =
         new Blob(
@@ -968,6 +1353,10 @@ await ffmpeg.run(...args);}
         );
 
 
+      /* ==========================================
+         REMOVE OLD URL
+      ========================================== */
+
       if(outputUrl){
 
         URL.revokeObjectURL(
@@ -977,8 +1366,14 @@ await ffmpeg.run(...args);}
       }
 
 
+      /* ==========================================
+         CREATE DOWNLOAD URL
+      ========================================== */
+
       outputUrl =
-        URL.createObjectURL(blob);
+        URL.createObjectURL(
+          blob
+        );
 
 
       downloadBtn.href =
@@ -988,6 +1383,10 @@ await ffmpeg.run(...args);}
         "Neon_base.mp4";
 
 
+      /* ==========================================
+         COMPLETE
+      ========================================== */
+
       progressBar.style.width =
         "100%";
 
@@ -995,24 +1394,77 @@ await ffmpeg.run(...args);}
         "100%";
 
 
-      setTimeout(()=>{
+      console.log(
+        "NEON BASE FFMPEG COMPLETE"
+      );
 
-        processing.style.display =
-          "none";
+      console.log(
+        "Output size:",
+        formatBytes(
+          data.length
+        )
+      );
 
-        result.style.display =
-          "block";
 
-      },500);
+      /* ==========================================
+         CLEAN INPUT MEMORY
+      ========================================== */
+
+      try{
+
+        engine.FS(
+          "unlink",
+          inputName
+        );
+
+      }catch(cleanError){
+
+        console.log(
+          "Input cleanup skipped:",
+          cleanError
+        );
+
+      }
+
+
+      /* ==========================================
+         SHOW RESULT
+      ========================================== */
+
+      setTimeout(
+        function(){
+
+          processing.style.display =
+            "none";
+
+          result.style.display =
+            "block";
+
+        },
+        500
+      );
 
 
     }catch(error){
 
       console.error(
-        "NEON BASE FFMPEG ERROR:",
+        "================================"
+      );
+
+      console.error(
+        "NEON BASE FFMPEG ERROR"
+      );
+
+      console.error(
         error
       );
 
+      console.error(
+        "================================"
+      );
+
+
+      /* RESTORE UI */
 
       processing.style.display =
         "none";
@@ -1030,6 +1482,8 @@ await ffmpeg.run(...args);}
         "block";
 
 
+      /* ERROR */
+
       alert(
         "NEON BASE processing failed.\n\n" +
         (
@@ -1046,17 +1500,18 @@ await ffmpeg.run(...args);}
 );
 
 
-/* =========================
+/* =====================================================
    RESET
-========================= */
+===================================================== */
 
 resetBtn.addEventListener(
   "click",
-  ()=>{
+  function(){
 
     selectedFile = null;
 
     fileInput.value = "";
+
 
     if(outputUrl){
 
@@ -1067,6 +1522,7 @@ resetBtn.addEventListener(
       outputUrl = null;
 
     }
+
 
     result.style.display =
       "none";
@@ -1096,9 +1552,9 @@ resetBtn.addEventListener(
 );
 
 
-/* =========================
-   FILE SIZE
-========================= */
+/* =====================================================
+   FORMAT FILE SIZE
+===================================================== */
 
 function formatBytes(bytes){
 
@@ -1108,6 +1564,7 @@ function formatBytes(bytes){
 
   }
 
+
   const sizes = [
     "Bytes",
     "KB",
@@ -1115,11 +1572,13 @@ function formatBytes(bytes){
     "GB"
   ];
 
+
   const i =
     Math.floor(
       Math.log(bytes) /
       Math.log(1024)
     );
+
 
   return (
     parseFloat(
