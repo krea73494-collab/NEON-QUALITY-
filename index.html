@@ -3,8 +3,18 @@
 
 <head>
 
-  <!-- IMPORTANT: must be first -->
-  <script src="./coi-serviceworker.js"></script>
+  <script type="module">
+import { createFFmpeg } from "./ffmpeg.js";
+
+const engine = createFFmpeg({
+  log: true,
+  corePath: "./ffmpeg-core.js",
+  wasmPath: "./ffmpeg-core.wasm",
+  workerPath: "./ffmpeg-core.worker.js"
+});
+
+window.neonFFmpeg = engine;
+</script>
 
   <meta charset="UTF-8">
 
@@ -874,7 +884,7 @@
        FILE -> UINT8ARRAY
        ===================================================== */
 
-    async function fileToUint8Array(file) {
+             * H.async function fileToUint8Array(file) {
 
       if (!file) {
 
@@ -1000,85 +1010,114 @@
         /*
          * Quality / speed
          */
+async function processVideo(selectedFile, updateProgress) {
+  const engine = window.neonFFmpeg;
 
-        "-preset",
-        "slow",
+  if (!engine) {
+    throw new Error("FFmpeg engine is not initialized.");
+  }
 
-        "-crf",
-        "16",
+  if (!engine.isLoaded()) {
+    updateProgress?.(5);
+    await engine.load();
+  }
 
+  updateProgress?.(10);
 
-        /*
-         * H.264
-         */
+  // Use native ArrayBuffer instead of fetchFile()
+  // This avoids the FileReader "Code=0" problem.
+  const buffer = await selectedFile.arrayBuffer();
+  const inputData = new Uint8Array(buffer);
 
-        "-profile:v",
-        "high",
+  const inputName = "input_video.mp4";
+  const outputName = "NEON_BASE.mp4";
 
-        "-level",
-        "5.2",
+  // Clean old files if they exist
+  try {
+    engine.FS("unlink", inputName);
+  } catch (_) {}
 
+  try {
+    engine.FS("unlink", outputName);
+  } catch (_) {}
 
-        /*
-         * TikTok/browser compatibility
-         */
+  updateProgress?.(15);
 
-        "-pix_fmt",
-        "yuv420p",
+  // Write original file into FFmpeg memory
+  engine.FS("writeFile", inputName, inputData);
 
+  updateProgress?.(20);
 
-        /*
-         * Do NOT resize.
-         *
-         * Do NOT force FPS.
-         */
+  engine.setProgress(({ ratio }) => {
+    const p = Math.round(20 + Math.max(0, Math.min(1, ratio)) * 70);
+    updateProgress?.(p);
+  });
 
+  /*
+   * TikTok-oriented high-quality encode
+   *
+   * - Keep 1080x1920
+   * - Convert 30fps -> 60fps
+   * - H.264 High
+   * - CRF 14
+   * - High bitrate ceiling
+   * - AAC audio
+   * - Faststart
+   */
 
-        /*
-         * High bitrate ceiling
-         */
+  await engine.run(
+    "-i", inputName,
 
-        "-maxrate",
-        "80M",
+    "-map", "0:v:0",
+    "-map", "0:a:0?",
 
-        "-bufsize",
-        "160M",
+    "-c:v", "libx264",
+    "-preset", "slow",
+    "-crf", "14",
 
+    "-profile:v", "high",
+    "-level", "4.2",
 
-        /*
-         * Audio
-         */
+    "-pix_fmt", "yuv420p",
 
-        "-c:a",
-        "aac",
+    "-vf", "scale=1080:1920:flags=lanczos,fps=60",
 
-        "-b:a",
-        "192k",
+    "-maxrate", "12M",
+    "-bufsize", "24M",
 
+    "-c:a", "aac",
+    "-b:a", "192k",
+    "-ar", "48000",
 
-        /*
-         * MP4
-         */
+    "-movflags", "+faststart",
 
-        "-movflags",
-        "+faststart",
+    "-map_metadata", "0",
 
+    outputName
+  );
 
-        /*
-         * Preserve metadata
-         */
+  updateProgress?.(92);
 
-        "-map_metadata",
-        "0",
+  const outputData = engine.FS("readFile", outputName);
 
+  const outputBlob = new Blob(
+    [outputData.buffer],
+    { type: "video/mp4" }
+  );
 
-        outputName
+  updateProgress?.(100);
 
-      ];
+  // Clean FFmpeg memory
+  try {
+    engine.FS("unlink", inputName);
+  } catch (_) {}
 
-    }
+  try {
+    engine.FS("unlink", outputName);
+  } catch (_) {}
 
-
+  return outputBlob;
+}
     /* =====================================================
        FILE SELECT
        ===================================================== */
