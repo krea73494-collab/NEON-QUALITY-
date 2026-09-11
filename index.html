@@ -2,11 +2,20 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
   <title>NEON QUALITY — B</title>
 
+  <!-- COI -->
   <script src="./coi-serviceworker.js"></script>
+
+  <!-- IMPORTANT:
+       ffmpeg-core.js MUST be loaded as classic script
+       BEFORE ffmpeg.js module -->
+  <script src="./ffmpeg-core.js"></script>
 
   <style>
     * {
@@ -17,107 +26,116 @@
     body {
       margin: 0;
       padding: 0;
-      width: 100%;
       min-height: 100%;
     }
 
     body {
       min-height: 100vh;
-      font-family: Arial, Helvetica, sans-serif;
-      color: #fff;
+
+      font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+      color: white;
 
       background:
         radial-gradient(
-          circle at 15% 10%,
-          rgba(255, 0, 55, .22),
-          transparent 32%
+          circle at 10% 10%,
+          rgba(255, 0, 60, .22),
+          transparent 35%
         ),
         radial-gradient(
-          circle at 85% 90%,
+          circle at 90% 90%,
           rgba(255, 255, 255, .08),
-          transparent 30%
+          transparent 35%
         ),
         #080808;
 
       display: flex;
-      align-items: center;
+
       justify-content: center;
+      align-items: center;
 
       padding: 18px;
     }
 
-    .container {
+    .app {
       width: 100%;
       max-width: 520px;
     }
 
     .glass {
-      width: 100%;
-
-      padding: 26px;
+      padding: 25px;
 
       border-radius: 28px;
 
       background:
-        linear-gradient(
-          135deg,
-          rgba(255,255,255,.10),
-          rgba(255,255,255,.035)
-        );
+        rgba(255,255,255,.075);
 
-      border: 1px solid rgba(255,255,255,.14);
+      border:
+        1px solid rgba(255,255,255,.15);
+
+      backdrop-filter:
+        blur(25px);
+
+      -webkit-backdrop-filter:
+        blur(25px);
 
       box-shadow:
-        0 25px 80px rgba(0,0,0,.55),
-        inset 0 1px 0 rgba(255,255,255,.12);
-
-      backdrop-filter: blur(28px);
-      -webkit-backdrop-filter: blur(28px);
+        0 25px 70px rgba(0,0,0,.55),
+        inset 0 1px 0
+        rgba(255,255,255,.12);
     }
 
-    .brand {
+    .logo {
       text-align: center;
-    }
 
-    .brand h1 {
-      margin: 0;
+      font-size: 30px;
 
-      font-size: 31px;
       font-weight: 900;
 
       letter-spacing: 3px;
     }
 
-    .brand h1 span {
+    .logo span {
       color: #ff1744;
     }
 
-    .brand p {
-      margin: 8px 0 0;
+    .subtitle {
+      margin-top: 7px;
 
-      font-size: 12px;
+      text-align: center;
 
-      color: #999;
+      color: #888;
 
-      letter-spacing: 1px;
+      font-size: 11px;
+
+      letter-spacing: 1.2px;
     }
 
-    .mode {
-      display: inline-block;
+    .badge {
+      width: fit-content;
 
-      margin-top: 15px;
-      padding: 6px 12px;
+      margin: 14px auto 0;
+
+      padding: 6px 13px;
 
       border-radius: 999px;
 
-      background: rgba(255,23,68,.12);
-
-      border: 1px solid rgba(255,23,68,.35);
-
       color: #ff4b6d;
 
-      font-size: 11px;
-      font-weight: bold;
+      background:
+        rgba(255,23,68,.1);
+
+      border:
+        1px solid
+        rgba(255,23,68,.3);
+
+      font-size: 10px;
+
+      font-weight: 800;
+
       letter-spacing: 1px;
     }
 
@@ -126,38 +144,37 @@
 
       margin-top: 24px;
 
-      padding: 32px 20px;
+      padding: 32px 18px;
+
+      border-radius: 21px;
+
+      border:
+        1px dashed
+        rgba(255,255,255,.22);
+
+      background:
+        rgba(255,255,255,.035);
 
       text-align: center;
 
-      border-radius: 22px;
-
-      border: 1px dashed rgba(255,255,255,.22);
-
-      background: rgba(255,255,255,.035);
-
       cursor: pointer;
 
-      transition:
-        .2s ease;
+      transition: .2s;
     }
 
     .upload:hover {
-      border-color: rgba(255,23,68,.8);
+      border-color:
+        rgba(255,23,68,.8);
 
       background:
-        rgba(255,23,68,.06);
+        rgba(255,23,68,.05);
     }
 
-    .upload:active {
-      transform: scale(.99);
-    }
-
-    .upload-icon {
+    .plus {
       width: 58px;
       height: 58px;
 
-      margin: 0 auto 14px;
+      margin: auto;
 
       display: flex;
 
@@ -166,54 +183,59 @@
 
       border-radius: 50%;
 
-      background:
-        rgba(255,23,68,.12);
-
-      border:
-        1px solid rgba(255,23,68,.3);
-
       color: #ff1744;
 
-      font-size: 31px;
+      background:
+        rgba(255,23,68,.1);
+
+      border:
+        1px solid
+        rgba(255,23,68,.3);
+
+      font-size: 32px;
     }
 
     .upload-title {
+      margin-top: 13px;
+
       font-size: 16px;
+
       font-weight: 800;
     }
 
-    .upload-subtitle {
+    .upload-info {
       margin-top: 7px;
 
-      color: #888;
+      color: #777;
 
-      font-size: 12px;
+      font-size: 11px;
     }
 
     #videoInput {
       display: none;
     }
 
-    .file-box {
+    .file {
       display: none;
 
       margin-top: 14px;
 
-      padding: 13px 15px;
+      padding: 13px;
 
       border-radius: 14px;
 
       background:
-        rgba(255,255,255,.055);
+        rgba(255,255,255,.05);
 
       border:
-        1px solid rgba(255,255,255,.08);
+        1px solid
+        rgba(255,255,255,.08);
     }
 
-    .file-label {
-      color: #888;
+    .file-title {
+      color: #777;
 
-      font-size: 10px;
+      font-size: 9px;
 
       text-transform: uppercase;
 
@@ -223,9 +245,7 @@
     .file-name {
       margin-top: 5px;
 
-      color: #fff;
-
-      font-size: 13px;
+      font-size: 12px;
 
       font-weight: 700;
 
@@ -235,61 +255,48 @@
     .file-size {
       margin-top: 4px;
 
-      color: #888;
+      color: #777;
 
-      font-size: 11px;
+      font-size: 10px;
     }
 
     button {
       width: 100%;
 
-      margin-top: 18px;
+      margin-top: 17px;
 
-      padding: 17px;
+      padding: 16px;
 
       border: 0;
 
-      border-radius: 17px;
+      border-radius: 16px;
 
       background:
         linear-gradient(
           135deg,
           #ff1744,
-          #d90032
+          #d50035
         );
 
-      color: #fff;
+      color: white;
 
       font-size: 15px;
 
       font-weight: 900;
 
-      letter-spacing: .3px;
-
       cursor: pointer;
 
-      box-shadow:
-        0 10px 30px rgba(255,23,68,.18);
-
-      transition:
-        transform .15s ease,
-        opacity .15s ease;
+      transition: .2s;
     }
 
     button:hover {
       transform: translateY(-1px);
     }
 
-    button:active {
-      transform: translateY(1px);
-    }
-
     button:disabled {
       opacity: .35;
 
       cursor: not-allowed;
-
-      box-shadow: none;
 
       transform: none;
     }
@@ -306,18 +313,14 @@
       font-size: 12px;
 
       line-height: 1.5;
-
-      word-break: break-word;
     }
 
     .progress {
       display: none;
 
-      width: 100%;
-
       height: 7px;
 
-      margin-top: 11px;
+      margin-top: 10px;
 
       overflow: hidden;
 
@@ -327,36 +330,38 @@
         rgba(255,255,255,.08);
     }
 
-    .progress-bar {
+    .bar {
       width: 0%;
 
       height: 100%;
 
-      border-radius: 99px;
-
       background: #ff1744;
 
-      transition: width .15s linear;
+      border-radius: 99px;
+
+      transition:
+        width .15s linear;
     }
 
-    .error-box {
+    .error {
       display: none;
 
-      margin-top: 14px;
+      margin-top: 13px;
 
-      padding: 13px;
+      padding: 12px;
 
-      border-radius: 14px;
+      border-radius: 13px;
 
       background:
         rgba(255,0,50,.08);
 
       border:
-        1px solid rgba(255,0,50,.25);
+        1px solid
+        rgba(255,0,50,.25);
 
       color: #ff8097;
 
-      font-size: 11px;
+      font-size: 10px;
 
       line-height: 1.5;
 
@@ -366,21 +371,21 @@
     .download {
       display: none;
 
-      margin-top: 15px;
+      margin-top: 14px;
     }
 
     .download a {
       display: block;
 
-      padding: 16px;
+      padding: 15px;
 
-      text-align: center;
+      border-radius: 15px;
 
-      border-radius: 16px;
-
-      background: #fff;
+      background: white;
 
       color: #111;
+
+      text-align: center;
 
       text-decoration: none;
 
@@ -389,30 +394,27 @@
       font-weight: 900;
     }
 
-    .info {
+    .settings {
       margin-top: 22px;
 
-      padding: 17px;
+      padding: 16px;
 
       border-radius: 18px;
 
       background:
-        rgba(255,255,255,.045);
+        rgba(255,255,255,.04);
 
       border:
-        1px solid rgba(255,255,255,.07);
+        1px solid
+        rgba(255,255,255,.07);
     }
 
-    .info-title {
-      margin-bottom: 12px;
+    .settings-title {
+      margin-bottom: 11px;
 
-      font-size: 13px;
+      font-size: 12px;
 
       font-weight: 900;
-
-      color: #fff;
-
-      letter-spacing: .5px;
     }
 
     .row {
@@ -424,7 +426,7 @@
 
       margin: 8px 0;
 
-      font-size: 11px;
+      font-size: 10px;
     }
 
     .row span:first-child {
@@ -438,72 +440,46 @@
     }
 
     .footer {
-      margin-top: 17px;
+      margin-top: 15px;
 
       text-align: center;
 
       color: #555;
 
-      font-size: 10px;
+      font-size: 9px;
 
       line-height: 1.5;
-    }
-
-    @media (max-width: 420px) {
-
-      .glass {
-        padding: 20px;
-        border-radius: 23px;
-      }
-
-      .brand h1 {
-        font-size: 26px;
-      }
-
-      .upload {
-        padding: 27px 15px;
-      }
     }
   </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="app">
 
   <div class="glass">
 
-    <!-- =========================
-         NEON QUALITY B ONLY
-         ========================= -->
+    <div class="logo">
+      NEON <span>QUALITY</span>
+    </div>
 
-    <div class="brand">
+    <div class="subtitle">
+      HIGH QUALITY VIDEO PROCESSOR
+    </div>
 
-      <h1>
-        NEON <span>QUALITY</span>
-      </h1>
-
-      <p>
-        HIGH QUALITY VIDEO PROCESSOR
-      </p>
-
-      <div class="mode">
-        B MODE
-      </div>
-
+    <div class="badge">
+      B MODE
     </div>
 
 
-    <!-- =========================
-         UPLOAD
-         ========================= -->
+    <!-- UPLOAD -->
 
     <label
       class="upload"
       for="videoInput"
     >
 
-      <div class="upload-icon">
+      <div class="plus">
         +
       </div>
 
@@ -511,7 +487,7 @@
         Select Video
       </div>
 
-      <div class="upload-subtitle">
+      <div class="upload-info">
         MP4 • MOV • MKV • WebM
       </div>
 
@@ -525,16 +501,14 @@
     >
 
 
-    <!-- =========================
-         FILE INFORMATION
-         ========================= -->
+    <!-- FILE -->
 
     <div
       id="fileBox"
-      class="file-box"
+      class="file"
     >
 
-      <div class="file-label">
+      <div class="file-title">
         Selected Video
       </div>
 
@@ -551,9 +525,7 @@
     </div>
 
 
-    <!-- =========================
-         BUTTON
-         ========================= -->
+    <!-- BUTTON -->
 
     <button
       id="prepareBtn"
@@ -563,9 +535,7 @@
     </button>
 
 
-    <!-- =========================
-         STATUS
-         ========================= -->
+    <!-- STATUS -->
 
     <div
       id="status"
@@ -575,9 +545,7 @@
     </div>
 
 
-    <!-- =========================
-         PROGRESS
-         ========================= -->
+    <!-- PROGRESS -->
 
     <div
       id="progress"
@@ -586,25 +554,21 @@
 
       <div
         id="progressBar"
-        class="progress-bar"
+        class="bar"
       ></div>
 
     </div>
 
 
-    <!-- =========================
-         ERROR
-         ========================= -->
+    <!-- ERROR -->
 
     <div
       id="errorBox"
-      class="error-box"
+      class="error"
     ></div>
 
 
-    <!-- =========================
-         DOWNLOAD
-         ========================= -->
+    <!-- DOWNLOAD -->
 
     <div
       id="downloadBox"
@@ -622,18 +586,16 @@
     </div>
 
 
-    <!-- =========================
-         B SETTINGS
-         ========================= -->
+    <!-- SETTINGS -->
 
-    <div class="info">
+    <div class="settings">
 
-      <div class="info-title">
-        B MODE
+      <div class="settings-title">
+        B MODE SETTINGS
       </div>
 
       <div class="row">
-        <span>Video Codec</span>
+        <span>Codec</span>
         <span>H.264 High</span>
       </div>
 
@@ -649,12 +611,12 @@
 
       <div class="row">
         <span>Resolution</span>
-        <span>Keep Source</span>
+        <span>Source</span>
       </div>
 
       <div class="row">
         <span>FPS</span>
-        <span>Keep Source</span>
+        <span>Source</span>
       </div>
 
       <div class="row">
@@ -664,7 +626,7 @@
 
       <div class="row">
         <span>Audio</span>
-        <span>AAC 192 kbps</span>
+        <span>AAC 192k</span>
       </div>
 
       <div class="row">
@@ -681,8 +643,8 @@
 
 
     <div class="footer">
-      Processing happens in your browser.<br>
-      B mode does not force resize or FPS conversion.
+      B mode keeps source resolution and FPS.
+      No forced resize or FPS conversion.
     </div>
 
   </div>
@@ -692,9 +654,23 @@
 
 <script type="module">
 
-  // =========================================================
-  // NEON QUALITY — B MODE ONLY
-  // =========================================================
+  /*
+   * =====================================================
+   * NEON QUALITY — B MODE ONLY
+   * =====================================================
+   *
+   * IMPORTANT:
+   *
+   * ffmpeg-core.js is already loaded above as:
+   *
+   * <script src="./ffmpeg-core.js"></script>
+   *
+   * Therefore ffmpeg.js can use:
+   *
+   * window.createFFmpegCore
+   *
+   * =====================================================
+   */
 
 
   import {
@@ -703,47 +679,69 @@
   } from "./ffmpeg.js";
 
 
-  // =========================================================
+  // =====================================================
   // ELEMENTS
-  // =========================================================
+  // =====================================================
 
   const videoInput =
-    document.getElementById("videoInput");
+    document.getElementById(
+      "videoInput"
+    );
 
   const prepareBtn =
-    document.getElementById("prepareBtn");
+    document.getElementById(
+      "prepareBtn"
+    );
 
   const fileBox =
-    document.getElementById("fileBox");
+    document.getElementById(
+      "fileBox"
+    );
 
   const fileName =
-    document.getElementById("fileName");
+    document.getElementById(
+      "fileName"
+    );
 
   const fileSize =
-    document.getElementById("fileSize");
+    document.getElementById(
+      "fileSize"
+    );
 
   const status =
-    document.getElementById("status");
+    document.getElementById(
+      "status"
+    );
 
   const progress =
-    document.getElementById("progress");
+    document.getElementById(
+      "progress"
+    );
 
   const progressBar =
-    document.getElementById("progressBar");
+    document.getElementById(
+      "progressBar"
+    );
 
   const errorBox =
-    document.getElementById("errorBox");
+    document.getElementById(
+      "errorBox"
+    );
 
   const downloadBox =
-    document.getElementById("downloadBox");
+    document.getElementById(
+      "downloadBox"
+    );
 
   const downloadLink =
-    document.getElementById("downloadLink");
+    document.getElementById(
+      "downloadLink"
+    );
 
 
-  // =========================================================
-  // STATE
-  // =========================================================
+  // =====================================================
+  // VARIABLES
+  // =====================================================
 
   let selectedFile = null;
 
@@ -752,13 +750,13 @@
   let ffmpeg = null;
 
 
-  // =========================================================
-  // FILE SIZE
-  // =========================================================
+  // =====================================================
+  // FORMAT SIZE
+  // =====================================================
 
   function formatBytes(bytes) {
 
-    if (bytes === 0) {
+    if (!bytes) {
       return "0 Bytes";
     }
 
@@ -776,8 +774,12 @@
       );
 
     return (
-      (bytes /
-        Math.pow(1024, index)
+      (
+        bytes /
+        Math.pow(
+          1024,
+          index
+        )
       ).toFixed(2)
       + " "
       + units[index]
@@ -785,88 +787,9 @@
   }
 
 
-  // =========================================================
-  // SHOW ERROR
-  // =========================================================
-
-  function showError(error) {
-
-    console.error(
-      "NEON QUALITY B ERROR:",
-      error
-    );
-
-    let message = "";
-
-    if (error instanceof Error) {
-
-      message =
-        error.message ||
-        error.toString();
-
-    } else {
-
-      message =
-        String(error);
-
-    }
-
-
-    errorBox.style.display =
-      "block";
-
-    errorBox.textContent =
-      "FFmpeg Error: " +
-      message;
-
-
-    status.textContent =
-      "Processing failed";
-
-
-    prepareBtn.disabled =
-      false;
-  }
-
-
-  // =========================================================
-  // FFMPEG PROGRESS
-  // =========================================================
-
-  function updateProgress(ratio) {
-
-    if (
-      typeof ratio !== "number" ||
-      !isFinite(ratio)
-    ) {
-      return;
-    }
-
-
-    const percent =
-      Math.max(
-        0,
-        Math.min(
-          100,
-          Math.round(ratio * 100)
-        )
-      );
-
-
-    progressBar.style.width =
-      percent + "%";
-
-
-    status.textContent =
-      "Encoding B video... " +
-      percent +
-      "%";
-  }
-
-
-  // =========================================================
+  // =====================================================
   // CREATE FFMPEG
-  // =========================================================
+  // =====================================================
 
   function createEngine() {
 
@@ -880,6 +803,11 @@
 
         log: true,
 
+        /*
+         * This MUST point to the same
+         * ffmpeg-core.js loaded above.
+         */
+
         corePath:
           "./ffmpeg-core.js"
 
@@ -889,9 +817,33 @@
     ffmpeg.setProgress(
       ({ ratio }) => {
 
-        updateProgress(
-          ratio
-        );
+        if (
+          typeof ratio !== "number"
+        ) {
+          return;
+        }
+
+
+        const percent =
+          Math.max(
+            0,
+            Math.min(
+              100,
+              Math.round(
+                ratio * 100
+              )
+            )
+          );
+
+
+        progressBar.style.width =
+          percent + "%";
+
+
+        status.textContent =
+          "Encoding B video... "
+          + percent
+          + "%";
 
       }
     );
@@ -901,9 +853,9 @@
   }
 
 
-  // =========================================================
-  // SELECT VIDEO
-  // =========================================================
+  // =====================================================
+  // SELECT FILE
+  // =====================================================
 
   videoInput.addEventListener(
     "change",
@@ -947,10 +899,9 @@
           "Select a video first";
 
         return;
+
       }
 
-
-      // Show file information
 
       fileBox.style.display =
         "block";
@@ -977,19 +928,15 @@
   );
 
 
-  // =========================================================
-  // PREPARE B VIDEO
-  // =========================================================
+  // =====================================================
+  // PREPARE
+  // =====================================================
 
   prepareBtn.addEventListener(
     "click",
     async () => {
 
       if (!selectedFile) {
-
-        status.textContent =
-          "Please select a video";
-
         return;
       }
 
@@ -1016,22 +963,43 @@
 
       try {
 
-        // ---------------------------------------------------
-        // CREATE ENGINE
-        // ---------------------------------------------------
+        // -------------------------------------------------
+        // CHECK CORE
+        // -------------------------------------------------
+
+        if (
+          typeof window.createFFmpegCore ===
+          "undefined"
+        ) {
+
+          throw new Error(
+            "FFmpeg Core မတွေ့ပါ။ " +
+            "ffmpeg-core.js ကို classic script " +
+            "အနေနဲ့ load မဖြစ်ပါ။"
+          );
+
+        }
+
+
+        // -------------------------------------------------
+        // ENGINE
+        // -------------------------------------------------
 
         const engine =
           createEngine();
 
 
-        // ---------------------------------------------------
-        // LOAD FFMPEG
-        // ---------------------------------------------------
+        // -------------------------------------------------
+        // LOAD
+        // -------------------------------------------------
 
-        if (!engine.isLoaded()) {
+        if (
+          !engine.isLoaded()
+        ) {
 
           status.textContent =
             "Loading FFmpeg...";
+
 
           await engine.load();
 
@@ -1039,26 +1007,23 @@
 
 
         status.textContent =
-          "FFmpeg loaded";
+          "FFmpeg ready";
 
 
-        // ---------------------------------------------------
+        // -------------------------------------------------
         // FILE NAMES
-        // ---------------------------------------------------
+        // -------------------------------------------------
 
         const inputName =
-          "neon_input_" +
-          Date.now() +
-          ".mp4";
-
+          "NEON_INPUT.mp4";
 
         const outputName =
           "NEON_QUALITY_B.mp4";
 
 
-        // ---------------------------------------------------
+        // -------------------------------------------------
         // WRITE INPUT
-        // ---------------------------------------------------
+        // -------------------------------------------------
 
         status.textContent =
           "Reading video...";
@@ -1066,35 +1031,31 @@
 
         engine.FS(
           "writeFile",
+
           inputName,
+
           await fetchFile(
             selectedFile
           )
         );
 
 
-        // ---------------------------------------------------
-        // B ENCODING
-        // ---------------------------------------------------
-        //
-        // IMPORTANT:
+        // -------------------------------------------------
+        // B ENCODE
+        // -------------------------------------------------
         //
         // No scale
-        // No forced resolution
-        // No FPS conversion
+        // No forced FPS
         //
-        // Source resolution remains unchanged.
-        // Source FPS remains unchanged.
+        // Source resolution preserved.
+        // Source FPS preserved.
         //
-        // H.264 High Profile
+        // H.264 High
         // CRF 16
-        // Slow preset
+        // Slow
         // YUV420P
-        // AAC 192k
-        // MP4
-        // Faststart
         //
-        // ---------------------------------------------------
+        // -------------------------------------------------
 
         const args = [
 
@@ -1148,21 +1109,17 @@
           "Encoding B video...";
 
 
-        // ---------------------------------------------------
-        // RUN
-        // ---------------------------------------------------
-
         await engine.run(
           ...args
         );
 
 
-        // ---------------------------------------------------
+        // -------------------------------------------------
         // READ OUTPUT
-        // ---------------------------------------------------
+        // -------------------------------------------------
 
         status.textContent =
-          "Preparing download...";
+          "Preparing video...";
 
 
         const data =
@@ -1182,9 +1139,9 @@
           );
 
 
-        // ---------------------------------------------------
-        // CREATE DOWNLOAD URL
-        // ---------------------------------------------------
+        // -------------------------------------------------
+        // DOWNLOAD URL
+        // -------------------------------------------------
 
         outputUrl =
           URL.createObjectURL(
@@ -1212,9 +1169,9 @@
           "B video ready ✓";
 
 
-        // ---------------------------------------------------
-        // CLEAN TEMP FILES
-        // ---------------------------------------------------
+        // -------------------------------------------------
+        // CLEAN
+        // -------------------------------------------------
 
         try {
 
@@ -1238,9 +1195,27 @@
 
       } catch (error) {
 
-        showError(
+        console.error(
+          "NEON QUALITY B:",
           error
         );
+
+
+        errorBox.style.display =
+          "block";
+
+
+        errorBox.textContent =
+          "FFmpeg Error: " +
+          (
+            error?.message ||
+            String(error)
+          );
+
+
+        status.textContent =
+          "B processing failed";
+
 
       } finally {
 
