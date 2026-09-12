@@ -1,114 +1,908 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
+  <!-- Required for FFmpeg.wasm on GitHub Pages -->
+  <script src="./coi-serviceworker.js"></script>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>NEON QUALITY — TikTok Patch Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>NEON QUALITY</title>
+
+  <!-- FFmpeg.wasm -->
   <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
+
   <style>
-    *{box-sizing:border-box}
-    body{
-      margin:0;min-height:100vh;font-family:Arial,sans-serif;color:#fff;
-      background:radial-gradient(circle at 50% 0%,#4d0010 0,#130006 38%,#050505 75%);
-      display:flex;justify-content:center;padding:28px 14px
+    * {
+      box-sizing: border-box;
     }
-    .box{
-      width:min(720px,100%);padding:22px;border:1px solid #ff183055;
-      border-radius:28px;background:#ffffff0b;backdrop-filter:blur(18px);
-      box-shadow:0 20px 80px #0008
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100%;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #ffffff;
     }
-    h1{margin:0;text-align:center;color:#fff;font-size:30px}
-    h1 span{color:#ff1830}
-    .sub{text-align:center;color:#bbb;margin:8px 0 22px}
-    .drop{
-      border:1px dashed #ff1830aa;border-radius:20px;padding:28px 15px;
-      text-align:center;background:#ff18300a
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(
+          circle at 50% 0%,
+          rgba(255, 24, 48, 0.32),
+          transparent 35%
+        ),
+        radial-gradient(
+          circle at 0% 100%,
+          rgba(255, 24, 48, 0.18),
+          transparent 35%
+        ),
+        #050505;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      padding: 20px;
     }
-    input{display:none}
-    button,.filebtn{
-      display:inline-block;border:0;border-radius:14px;padding:14px 20px;
-      font-weight:700;font-size:15px;cursor:pointer
+
+    .container {
+      width: 100%;
+      max-width: 620px;
     }
-    .filebtn{background:#fff;color:#111}
-    button{width:100%;margin-top:16px;background:#ff1830;color:#fff}
-    button:disabled{opacity:.45;cursor:not-allowed}
-    #download{display:none;text-align:center;text-decoration:none;background:#fff;color:#111;margin-top:12px}
-    .info{margin-top:18px;padding:15px;border-radius:16px;background:#0006;color:#ccc;font-size:13px;line-height:1.65}
-    #status{margin-top:15px;text-align:center;color:#ff8090;min-height:22px}
-    .warn{color:#ffb4bd}
-    code{color:#fff}
+
+    .glass {
+      position: relative;
+
+      padding: 28px;
+
+      border-radius: 30px;
+
+      background:
+        linear-gradient(
+          135deg,
+          rgba(255,255,255,0.11),
+          rgba(255,255,255,0.035)
+        );
+
+      border: 1px solid rgba(255, 255, 255, 0.13);
+
+      box-shadow:
+        0 30px 100px rgba(0,0,0,0.65),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+
+      overflow: hidden;
+    }
+
+    .glass::before {
+      content: "";
+
+      position: absolute;
+
+      width: 250px;
+      height: 250px;
+
+      top: -130px;
+      right: -100px;
+
+      background: #ff1830;
+
+      opacity: 0.08;
+
+      filter: blur(70px);
+
+      pointer-events: none;
+    }
+
+    .logo {
+      text-align: center;
+
+      font-size: 31px;
+
+      font-weight: 900;
+
+      letter-spacing: 2px;
+
+      margin: 0;
+    }
+
+    .logo span {
+      color: #ff1830;
+    }
+
+    .subtitle {
+      text-align: center;
+
+      color: #aaa;
+
+      font-size: 13px;
+
+      margin-top: 8px;
+
+      margin-bottom: 28px;
+
+      letter-spacing: 0.5px;
+    }
+
+    .upload-area {
+      border: 1px dashed rgba(255,24,48,0.75);
+
+      border-radius: 22px;
+
+      padding: 34px 18px;
+
+      text-align: center;
+
+      background:
+        rgba(255,24,48,0.035);
+
+      transition: 0.2s;
+    }
+
+    .upload-area:hover {
+      background:
+        rgba(255,24,48,0.07);
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .select-button {
+      display: inline-flex;
+
+      align-items: center;
+      justify-content: center;
+
+      min-height: 50px;
+
+      padding: 0 24px;
+
+      border-radius: 15px;
+
+      background: #ffffff;
+
+      color: #080808;
+
+      font-size: 14px;
+
+      font-weight: 800;
+
+      cursor: pointer;
+
+      transition: 0.2s;
+
+      box-shadow:
+        0 10px 30px rgba(0,0,0,0.25);
+    }
+
+    .select-button:hover {
+      transform: translateY(-1px);
+    }
+
+    .filename {
+      margin-top: 16px;
+
+      color: #999;
+
+      font-size: 13px;
+
+      word-break: break-all;
+    }
+
+    .file-info {
+      display: none;
+
+      margin-top: 14px;
+
+      padding: 12px 14px;
+
+      border-radius: 14px;
+
+      background: rgba(0,0,0,0.35);
+
+      color: #aaa;
+
+      font-size: 12px;
+
+      line-height: 1.6;
+    }
+
+    .prepare {
+      width: 100%;
+
+      margin-top: 18px;
+
+      min-height: 54px;
+
+      border: 0;
+
+      border-radius: 16px;
+
+      background:
+        linear-gradient(
+          135deg,
+          #ff1830,
+          #d9001d
+        );
+
+      color: #ffffff;
+
+      font-size: 15px;
+
+      font-weight: 900;
+
+      letter-spacing: 0.5px;
+
+      cursor: pointer;
+
+      box-shadow:
+        0 12px 35px rgba(255,24,48,0.25);
+
+      transition: 0.2s;
+    }
+
+    .prepare:hover {
+      transform: translateY(-1px);
+    }
+
+    .prepare:disabled {
+      opacity: 0.4;
+
+      cursor: not-allowed;
+
+      transform: none;
+
+      box-shadow: none;
+    }
+
+    .download {
+      display: none;
+
+      width: 100%;
+
+      margin-top: 12px;
+
+      min-height: 52px;
+
+      padding: 16px;
+
+      border-radius: 16px;
+
+      background: #ffffff;
+
+      color: #080808;
+
+      text-decoration: none;
+
+      text-align: center;
+
+      font-size: 14px;
+
+      font-weight: 900;
+    }
+
+    .status {
+      min-height: 24px;
+
+      margin-top: 16px;
+
+      text-align: center;
+
+      color: #ff7d8b;
+
+      font-size: 13px;
+
+      line-height: 1.5;
+    }
+
+    .info {
+      margin-top: 22px;
+
+      padding: 17px;
+
+      border-radius: 18px;
+
+      background:
+        rgba(0,0,0,0.38);
+
+      border: 1px solid rgba(255,255,255,0.06);
+
+      color: #aaa;
+
+      font-size: 12px;
+
+      line-height: 1.8;
+    }
+
+    .info-title {
+      color: #ffffff;
+
+      font-weight: 800;
+
+      margin-bottom: 8px;
+    }
+
+    .red {
+      color: #ff1830;
+    }
+
+    .footer {
+      text-align: center;
+
+      color: #555;
+
+      font-size: 10px;
+
+      margin-top: 18px;
+
+      letter-spacing: 1px;
+    }
   </style>
+
 </head>
+
 <body>
-<div class="box">
-  <h1>NEON <span>QUALITY</span></h1>
-  <div class="sub">TikTok Patch Test — no video re-encode</div>
 
-  <div class="drop">
-    <label class="filebtn" for="file">SELECT VIDEO</label>
-    <input id="file" type="file" accept="video/*">
-    <div id="name" style="margin-top:14px;color:#aaa">No video selected</div>
+<div class="container">
+
+  <div class="glass">
+
+    <h1 class="logo">
+      NEON <span>QUALITY</span>
+    </h1>
+
+    <div class="subtitle">
+      TikTok Quality Preparation
+    </div>
+
+
+    <!-- UPLOAD -->
+
+    <div class="upload-area">
+
+      <label
+        class="select-button"
+        for="videoInput"
+      >
+        SELECT VIDEO
+      </label>
+
+      <input
+        id="videoInput"
+        type="file"
+        accept="video/*"
+      >
+
+      <div
+        id="fileName"
+        class="filename"
+      >
+        No video selected
+      </div>
+
+      <div
+        id="fileInfo"
+        class="file-info"
+      ></div>
+
+    </div>
+
+
+    <!-- PREPARE -->
+
+    <button
+      id="prepareButton"
+      class="prepare"
+      disabled
+    >
+      PREPARE VIDEO
+    </button>
+
+
+    <!-- DOWNLOAD -->
+
+    <a
+      id="downloadButton"
+      class="download"
+      download="NEON_QUALITY.mp4"
+    >
+      DOWNLOAD VIDEO
+    </a>
+
+
+    <!-- STATUS -->
+
+    <div
+      id="status"
+      class="status"
+    ></div>
+
+
+    <!-- INFO -->
+
+    <div class="info">
+
+      <div class="info-title">
+        <span class="red">●</span>
+        PATCH TEST
+      </div>
+
+      H.264 video → <b>Original COPY</b><br>
+
+      Original AAC → <b>Original COPY</b><br>
+
+      Extra AAC track → <b>Test</b><br>
+
+      Resolution → <b>No change</b><br>
+
+      FPS → <b>No change</b><br>
+
+      CRF → <b>None</b><br>
+
+      Re-encode → <b>None</b><br>
+
+      Bitrate reduction → <b>None</b>
+
+    </div>
+
+
+    <div class="footer">
+      LOCAL PROCESSING • NEON QUALITY
+    </div>
+
   </div>
 
-  <button id="prepare" disabled>PREPARE VIDEO</button>
-  <a id="download" class="filebtn" download="NEON_QUALITY_TEST.mp4">DOWNLOAD TEST FILE</a>
-
-  <div id="status"></div>
-
-  <div class="info">
-    <b>Test A: container / track patch</b><br>
-    • H.264 video: <b>copy</b><br>
-    • Original AAC: <b>copy</b><br>
-    • Add a second AAC track<br>
-    • Video track first<br>
-    • MP4 brand: <code>isom / iso2 / avc1 / mp41</code><br>
-    • Comment: <code>Patched by NEON QUALITY</code><br>
-    • <b>No CRF, no scale, no FPS conversion</b>
-  </div>
 </div>
 
+
 <script>
-const { createFFmpeg, fetchFile } = FFmpeg;
-const ffmpeg = createFFmpeg({
-  log: true,
-  corePath: "https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js"
-});
 
-const fileInput = document.getElementById("file");
-const prepare = document.getElementById("prepare");
-const download = document.getElementById("download");
-const nameEl = document.getElementById("name");
-const status = document.getElementById("status");
+  /*
+  ============================================
+  NEON QUALITY
+  TEST A
+  ============================================
+  */
 
-let selectedFile = null;
+  const {
+    createFFmpeg,
+    fetchFile
+  } = FFmpeg;
 
-fileInput.addEventListener("change", () => {
-  selectedFile = fileInput.files && fileInput.files[0];
-  if (!selectedFile) return;
-  nameEl.textContent = selectedFile.name;
-  prepare.disabled = false;
-  download.style.display = "none";
-  status.textContent = "";
-});
 
-prepare.addEventListener("click", async () => {
-  if (!selectedFile) return;
+  const ffmpeg = createFFmpeg({
 
-  prepare.disabled = true;
-  download.style.display = "none";
-  status.textContent = "Loading FFmpeg…";
+    log: true,
 
-  try {
-    if (!ffmpeg.isLoaded()) await ffmpeg.load();
+    corePath:
+      "https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js"
 
-    const input = "input.mp4";
-    const output = "NEON_QUALITY_TEST.mp4";
+  });
 
-    // Remove old virtual files if they exist.
-    try { ffmpeg.FS("unlink", input); } catch(e) {}
-    try { ffmpeg.FS("unlink", output); } catch(e) {}
 
-    ffmpeg.FS("writeFile", input, await fetchFile(selectedFile));
+  const videoInput =
+    document.getElementById(
+      "videoInput"
+    );
+
+
+  const fileName =
+    document.getElementById(
+      "fileName"
+    );
+
+
+  const fileInfo =
+    document.getElementById(
+      "fileInfo"
+    );
+
+
+  const prepareButton =
+    document.getElementById(
+      "prepareButton"
+    );
+
+
+  const downloadButton =
+    document.getElementById(
+      "downloadButton"
+    );
+
+
+  const status =
+    document.getElementById(
+      "status"
+    );
+
+
+  let selectedFile = null;
+
+  let downloadURL = null;
+
+
+  /*
+  ============================================
+  FILE SELECT
+  ============================================
+  */
+
+  videoInput.addEventListener(
+    "change",
+    function () {
+
+      selectedFile =
+        this.files &&
+        this.files[0];
+
+
+      if (!selectedFile) {
+
+        prepareButton.disabled =
+          true;
+
+        return;
+
+      }
+
+
+      fileName.textContent =
+        selectedFile.name;
+
+
+      const sizeMB =
+        (
+          selectedFile.size /
+          1024 /
+          1024
+        ).toFixed(2);
+
+
+      fileInfo.innerHTML =
+        "File size: " +
+        sizeMB +
+        " MB<br>" +
+
+        "Type: " +
+        selectedFile.type;
+
+
+      fileInfo.style.display =
+        "block";
+
+
+      prepareButton.disabled =
+        false;
+
+
+      downloadButton.style.display =
+        "none";
+
+
+      status.textContent =
+        "";
+
+    }
+  );
+
+
+  /*
+  ============================================
+  PREPARE
+  ============================================
+  */
+
+  prepareButton.addEventListener(
+    "click",
+    async function () {
+
+      if (!selectedFile) {
+
+        return;
+
+      }
+
+
+      prepareButton.disabled =
+        true;
+
+
+      downloadButton.style.display =
+        "none";
+
+
+      status.textContent =
+        "Loading FFmpeg…";
+
+
+      try {
+
+
+        /*
+        LOAD FFmpeg
+        */
+
+        if (!ffmpeg.isLoaded()) {
+
+          await ffmpeg.load();
+
+        }
+
+
+        status.textContent =
+          "Reading original video…";
+
+
+        const inputName =
+          "source.mp4";
+
+
+        const outputName =
+          "NEON_QUALITY.mp4";
+
+
+        /*
+        CLEAN OLD FILES
+        */
+
+        try {
+
+          ffmpeg.FS(
+            "unlink",
+            inputName
+          );
+
+        } catch (e) {}
+
+
+        try {
+
+          ffmpeg.FS(
+            "unlink",
+            outputName
+          );
+
+        } catch (e) {}
+
+
+        /*
+        WRITE ORIGINAL FILE
+        */
+
+        const inputData =
+          await fetchFile(
+            selectedFile
+          );
+
+
+        ffmpeg.FS(
+          "writeFile",
+          inputName,
+          inputData
+        );
+
+
+        status.textContent =
+          "Creating patched MP4…";
+
+
+        /*
+        ========================================
+        TEST A
+
+        IMPORTANT:
+
+        - NO libx264
+        - NO CRF
+        - NO bitrate setting
+        - NO scale
+        - NO FPS conversion
+
+        Video is COPY.
+        Audio is COPY.
+
+        We create:
+
+        Video
+        +
+        AAC #1
+        +
+        AAC #2
+        ========================================
+        */
+
+        await ffmpeg.run(
+
+          "-i",
+          inputName,
+
+
+          /*
+          VIDEO
+          */
+
+          "-map",
+          "0:v:0",
+
+
+          /*
+          ORIGINAL AUDIO
+          */
+
+          "-map",
+          "0:a:0?",
+
+
+          /*
+          SECOND AUDIO TRACK
+          */
+
+          "-map",
+          "0:a:0?",
+
+
+          /*
+          VIDEO COPY
+          */
+
+          "-c:v",
+          "copy",
+
+
+          /*
+          AUDIO COPY
+          */
+
+          "-c:a",
+          "copy",
+
+
+          /*
+          MP4
+          */
+
+          "-movflags",
+          "+faststart",
+
+
+          /*
+          COMMENT
+          */
+
+          "-metadata",
+          "comment=Patched by NEON QUALITY",
+
+
+          /*
+          OUTPUT
+          */
+
+          "-y",
+          outputName
+
+        );
+
+
+        status.textContent =
+          "Preparing download…";
+
+
+        /*
+        READ OUTPUT
+        */
+
+        const outputData =
+          ffmpeg.FS(
+            "readFile",
+            outputName
+          );
+
+
+        /*
+        CREATE BLOB
+        */
+
+        const blob =
+          new Blob(
+            [outputData.buffer],
+            {
+              type:
+                "video/mp4"
+            }
+          );
+
+
+        /*
+        RELEASE OLD URL
+        */
+
+        if (downloadURL) {
+
+          URL.revokeObjectURL(
+            downloadURL
+          );
+
+        }
+
+
+        downloadURL =
+          URL.createObjectURL(
+            blob
+          );
+
+
+        /*
+        DOWNLOAD LINK
+        */
+
+        downloadButton.href =
+          downloadURL;
+
+
+        downloadButton.download =
+          "NEON_QUALITY.mp4";
+
+
+        downloadButton.style.display =
+          "block";
+
+
+        status.textContent =
+          "DONE — Test video is ready.";
+
+
+      } catch (error) {
+
+
+        console.error(
+          "NEON QUALITY ERROR:",
+          error
+        );
+
+
+        let message =
+          "Unknown FFmpeg error";
+
+
+        if (
+          error &&
+          error.message
+        ) {
+
+          message =
+            error.message;
+
+        }
+
+
+        status.textContent =
+          "FAILED: " +
+          message;
+
+
+      } finally {
+
+
+        prepareButton.disabled =
+          false;
+
+      }
+
+    }
+  );
+
+</script>
+
+</body>
+</html>    ffmpeg.FS("writeFile", input, await fetchFile(selectedFile));
 
     status.textContent = "Patching container / tracks…";
 
