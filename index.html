@@ -1,114 +1,83 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NEON QUALITY — Test B</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#070707;color:#fff;font-family:Arial,sans-serif;display:flex;justify-content:center;padding:20px}.box{width:min(650px,100%);margin:auto;padding:25px;border-radius:28px;background:rgba(255,255,255,.07);border:1px solid rgba(255,24,48,.35);backdrop-filter:blur(20px);box-shadow:0 25px 80px #000}h1{text-align:center;margin:0;font-size:31px}h1 span{color:#ff1830}.sub{text-align:center;color:#aaa;margin:8px 0 25px}.pick{border:1px dashed #ff1830;border-radius:20px;padding:30px;text-align:center}input{display:none}label,.btn,.download{display:block;width:100%;padding:15px;border-radius:15px;text-align:center;font-weight:800;cursor:pointer}label{background:#fff;color:#000}.btn{margin-top:15px;border:0;background:#ff1830;color:#fff}.btn:disabled{opacity:.4}.download{display:none;margin-top:12px;background:#fff;color:#000;text-decoration:none}#name{text-align:center;color:#aaa;font-size:13px;margin-top:14px;word-break:break-all}#status{text-align:center;color:#ff7c8a;min-height:24px;margin-top:15px}.info{margin-top:20px;padding:16px;border-radius:16px;background:#0008;color:#aaa;font-size:12px;line-height:1.7}code{color:#fff}
+</style>
+</head>
+<body>
+<div class="box">
+<h1>NEON <span>QUALITY</span></h1>
+<div class="sub">TEST B — MP4 Binary Structure Test</div>
+<div class="pick">
+<label for="file">SELECT VIDEO</label>
+<input id="file" type="file" accept="video/mp4,video/*">
+<div id="name">No video selected</div>
+</div>
+<button id="go" class="btn" disabled>CREATE TEST B</button>
+<a id="download" class="download" download="NEON_QUALITY_TEST_B.mp4">DOWNLOAD TEST B</a>
+<div id="status"></div>
+<div class="info">
+<b>TEST B</b><br>
+• H.264 bytes are not re-encoded<br>
+• AAC bytes are not re-encoded<br>
+• MP4 <code>ftyp</code> compatibility brands are changed<br>
+• A harmless MP4 <code>free</code> marker is added<br>
+• Resolution/FPS/bitrate are not changed<br><br>
+This is a controlled structure test. It is not claimed to be CompressBase's private algorithm.
+</div>
+</div>
+<script>
+const fileEl=document.getElementById("file"),nameEl=document.getElementById("name"),go=document.getElementById("go"),dl=document.getElementById("download"),status=document.getElementById("status");
+let file=null;
+fileEl.onchange=()=>{file=fileEl.files&&fileEl.files[0];if(!file)return;nameEl.textContent=file.name;go.disabled=false;dl.style.display="none";status.textContent=""};
 
-  <!-- Required for FFmpeg.wasm on GitHub Pages -->
-  <script src="./coi-serviceworker.js"></script>
+function u32(a,p,v){a[p]=(v>>>24)&255;a[p+1]=(v>>>16)&255;a[p+2]=(v>>>8)&255;a[p+3]=v&255}
+function readU32(a,p){return (((a[p]*256+a[p+1])*256+a[p+2])*256+a[p+3])>>>0}
+function typeAt(a,p){return String.fromCharCode(a[p],a[p+1],a[p+2],a[p+3])}
+function put(a,p,s){for(let i=0;i<s.length;i++)a[p+i]=s.charCodeAt(i)}
+function concat(){let n=0;for(const x of arguments)n+=x.length;const o=new Uint8Array(n);let p=0;for(const x of arguments){o.set(x,p);p+=x.length}return o}
+function makeBox(type,payload){const o=new Uint8Array(8+payload.length);u32(o,0,o.length);put(o,4,type);o.set(payload,8);return o}
 
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+function patch(bytes){
+  let p=0,boxes=[];
+  while(p+8<=bytes.length){
+    let size=readU32(bytes,p),type=typeAt(bytes,p+4),header=8;
+    if(size===1)throw Error("64-bit MP4 box is not supported by this test.");
+    if(size<8||p+size>bytes.length)throw Error("Invalid MP4 box: "+type);
+    boxes.push({start:p,size,type,header});p+=size;
+  }
+  const f=boxes.find(x=>x.type==="ftyp");
+  if(!f)throw Error("MP4 ftyp box not found.");
+  const old=bytes.slice(f.start+8,f.start+f.size);
+  if(old.length<8)throw Error("Invalid ftyp.");
+  const payload=new Uint8Array(24);
+  payload.set(old.slice(0,8),0);
+  put(payload,8,"isom");put(payload,12,"iso2");put(payload,16,"avc1");put(payload,20,"mp41");
+  const ftyp=makeBox("ftyp",payload);
+  const text=new TextEncoder().encode("NEON QUALITY TEST B");
+  const freePayload=new Uint8Array(Math.max(24,text.length));freePayload.set(text);
+  const free=makeBox("free",freePayload);
+  return concat(bytes.slice(0,f.start),ftyp,free,bytes.slice(f.start+f.size));
+}
 
-  <title>NEON QUALITY</title>
-
-  <!-- FFmpeg.wasm -->
-  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
-
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      min-height: 100%;
-      font-family: Arial, Helvetica, sans-serif;
-      color: #ffffff;
-    }
-
-    body {
-      min-height: 100vh;
-      background:
-        radial-gradient(
-          circle at 50% 0%,
-          rgba(255, 24, 48, 0.32),
-          transparent 35%
-        ),
-        radial-gradient(
-          circle at 0% 100%,
-          rgba(255, 24, 48, 0.18),
-          transparent 35%
-        ),
-        #050505;
-
-      display: flex;
-      justify-content: center;
-      align-items: center;
-
-      padding: 20px;
-    }
-
-    .container {
-      width: 100%;
-      max-width: 620px;
-    }
-
-    .glass {
-      position: relative;
-
-      padding: 28px;
-
-      border-radius: 30px;
-
-      background:
-        linear-gradient(
-          135deg,
-          rgba(255,255,255,0.11),
-          rgba(255,255,255,0.035)
-        );
-
-      border: 1px solid rgba(255, 255, 255, 0.13);
-
-      box-shadow:
-        0 30px 100px rgba(0,0,0,0.65),
-        inset 0 1px 0 rgba(255,255,255,0.08);
-
-      backdrop-filter: blur(25px);
-      -webkit-backdrop-filter: blur(25px);
-
-      overflow: hidden;
-    }
-
-    .glass::before {
-      content: "";
-
-      position: absolute;
-
-      width: 250px;
-      height: 250px;
-
-      top: -130px;
-      right: -100px;
-
-      background: #ff1830;
-
-      opacity: 0.08;
-
-      filter: blur(70px);
-
-      pointer-events: none;
-    }
-
-    .logo {
-      text-align: center;
-
-      font-size: 31px;
-
-      font-weight: 900;
-
-      letter-spacing: 2px;
+go.onclick=async()=>{
+  if(!file)return;go.disabled=true;dl.style.display="none";status.textContent="Reading MP4…";
+  try{
+    const bytes=new Uint8Array(await file.arrayBuffer());
+    const out=patch(bytes);
+    const blob=new Blob([out],{type:"video/mp4"});
+    const url=URL.createObjectURL(blob);
+    dl.href=url;dl.style.display="block";status.textContent="DONE — Test B ready. No video re-encode.";
+  }catch(e){console.error(e);status.textContent="FAILED: "+(e.message||e)}
+  finally{go.disabled=false}
+};
+</script>
+</body>
+</html>      letter-spacing: 2px;
 
       margin: 0;
     }
