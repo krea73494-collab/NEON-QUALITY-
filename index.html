@@ -1,966 +1,200 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>NEON QUALITY</title>
+  <!-- Required for FFmpeg.wasm -->
+  <script src="coi-serviceworker.js"></script>
 
-<script src="coi-serviceworker.js"></script>
+  <title>NEON QUALITY</title>
 
-<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
+  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
 
-<style>
-* {
-    box-sizing: border-box;
-}
-
-html, body {
-    margin: 0;
-    padding: 0;
-    min-height: 100%;
-    font-family: Arial, Helvetica, sans-serif;
-    color: white;
-}
-
-body {
-    min-height: 100vh;
-    background:
-        radial-gradient(circle at 20% 10%, rgba(255, 20, 50, .25), transparent 35%),
-        radial-gradient(circle at 90% 90%, rgba(255,255,255,.08), transparent 35%),
-        #080808;
-}
-
-.container {
-    width: 100%;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-}
-
-.card {
-    width: 100%;
-    max-width: 520px;
-    padding: 28px;
-    border-radius: 30px;
-
-    background: rgba(255,255,255,.07);
-    border: 1px solid rgba(255,255,255,.15);
-
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
-
-    box-shadow:
-        0 30px 80px rgba(0,0,0,.55),
-        inset 0 1px 0 rgba(255,255,255,.12);
-}
-
-.logo {
-    text-align: center;
-    font-size: 32px;
-    font-weight: 900;
-    letter-spacing: 3px;
-}
-
-.logo span {
-    color: #ff1830;
-}
-
-.subtitle {
-    text-align: center;
-    margin-top: 8px;
-    margin-bottom: 28px;
-    font-size: 13px;
-    color: rgba(255,255,255,.55);
-}
-
-.upload {
-    width: 100%;
-    padding: 35px 20px;
-    border-radius: 22px;
-    border: 1px dashed rgba(255,255,255,.25);
-    background: rgba(255,255,255,.045);
-    text-align: center;
-    cursor: pointer;
-    display: block;
-}
-
-.upload:hover {
-    border-color: #ff1830;
-    background: rgba(255,24,48,.08);
-}
-
-.upload-icon {
-    font-size: 45px;
-    margin-bottom: 10px;
-}
-
-.upload-title {
-    font-size: 16px;
-    font-weight: bold;
-}
-
-.upload-sub {
-    margin-top: 7px;
-    font-size: 12px;
-    color: rgba(255,255,255,.5);
-}
-
-#fileInput {
-    display: none;
-}
-
-.fileBox {
-    display: none;
-    margin-top: 18px;
-    padding: 14px;
-    border-radius: 16px;
-    background: rgba(255,255,255,.06);
-}
-
-.fileName {
-    font-size: 13px;
-    font-weight: bold;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.fileSize {
-    margin-top: 5px;
-    font-size: 11px;
-    color: rgba(255,255,255,.5);
-}
-
-button {
-    width: 100%;
-    border: 0;
-    border-radius: 17px;
-    padding: 16px;
-    margin-top: 18px;
-
-    color: white;
-    background: linear-gradient(
-        135deg,
-        #ff1830,
-        #d90020
-    );
-
-    font-size: 15px;
-    font-weight: 800;
-    cursor: pointer;
-
-    box-shadow:
-        0 12px 30px rgba(255,24,48,.25);
-}
-
-button:disabled {
-    opacity: .45;
-    cursor: not-allowed;
-    box-shadow: none;
-}
-
-#downloadBtn {
-    display: none;
-    background: rgba(255,255,255,.10);
-    box-shadow: none;
-}
-
-.status {
-    margin-top: 18px;
-    text-align: center;
-    font-size: 13px;
-    color: rgba(255,255,255,.65);
-}
-
-.progressBox {
-    display: none;
-    margin-top: 15px;
-    height: 7px;
-    border-radius: 20px;
-    background: rgba(255,255,255,.1);
-    overflow: hidden;
-}
-
-.progressBar {
-    height: 100%;
-    width: 0%;
-    background: #ff1830;
-    transition: width .15s;
-}
-
-.info {
-    margin-top: 22px;
-    padding: 16px;
-    border-radius: 18px;
-    background: rgba(255,255,255,.045);
-    border: 1px solid rgba(255,255,255,.07);
-}
-
-.infoTitle {
-    font-weight: 800;
-    margin-bottom: 10px;
-}
-
-.row {
-    display: flex;
-    justify-content: space-between;
-    padding: 6px 0;
-    font-size: 12px;
-    color: rgba(255,255,255,.6);
-}
-
-.row strong {
-    color: white;
-}
-
-.footer {
-    margin-top: 20px;
-    text-align: center;
-    font-size: 10px;
-    letter-spacing: 1px;
-    color: rgba(255,255,255,.3);
-}
-</style>
-</head>
-
-<body>
-
-<div class="container">
-
-<div class="card">
-
-    <div class="logo">
-        NEON <span>QUALITY</span>
-    </div>
-
-    <div class="subtitle">
-        H.264 COPY • MP4 REMUX • FASTSTART
-    </div>
-
-    <label class="upload">
-
-        <input
-            id="fileInput"
-            type="file"
-            accept="video/*"
-        >
-
-        <div class="upload-icon">
-            📹
-        </div>
-
-        <div class="upload-title">
-            Select your video
-        </div>
-
-        <div class="upload-sub">
-            Video processing happens in your browser
-        </div>
-
-    </label>
-
-
-    <div id="fileBox" class="fileBox">
-
-        <div id="fileName" class="fileName"></div>
-
-        <div id="fileSize" class="fileSize"></div>
-
-    </div>
-
-
-    <button
-        id="prepareBtn"
-        disabled
-    >
-        PREPARE VIDEO
-    </button>
-
-
-    <div id="status" class="status">
-        Ready
-    </div>
-
-
-    <div id="progressBox" class="progressBox">
-
-        <div
-            id="progressBar"
-            class="progressBar"
-        ></div>
-
-    </div>
-
-
-    <button id="downloadBtn">
-        ⬇ DOWNLOAD NEON QUALITY
-    </button>
-
-
-    <div class="info">
-
-        <div class="infoTitle">
-            ⚡ NEON QUALITY PROCESSING
-        </div>
-
-        <div class="row">
-            <span>Video</span>
-            <strong>ORIGINAL COPY</strong>
-        </div>
-
-        <div class="row">
-            <span>Audio</span>
-            <strong>ORIGINAL COPY</strong>
-        </div>
-
-        <div class="row">
-            <span>Re-encode</span>
-            <strong>NO</strong>
-        </div>
-
-        <div class="row">
-            <span>CRF</span>
-            <strong>NO</strong>
-        </div>
-
-        <div class="row">
-            <span>Bitrate</span>
-            <strong>ORIGINAL</strong>
-        </div>
-
-        <div class="row">
-            <span>Resolution</span>
-            <strong>ORIGINAL</strong>
-        </div>
-
-        <div class="row">
-            <span>FPS</span>
-            <strong>ORIGINAL</strong>
-        </div>
-
-        <div class="row">
-            <span>Container</span>
-            <strong>MP4</strong>
-        </div>
-
-        <div class="row">
-            <span>Faststart</span>
-            <strong>YES</strong>
-        </div>
-
-    </div>
-
-
-    <div class="footer">
-        LOCAL PROCESSING • NEON QUALITY
-    </div>
-
-</div>
-
-</div>
-
-
-<script>
-
-const { createFFmpeg, fetchFile } = FFmpeg;
-
-const ffmpeg = createFFmpeg({
-    log: false
-});
-
-const fileInput =
-    document.getElementById("fileInput");
-
-const prepareBtn =
-    document.getElementById("prepareBtn");
-
-const downloadBtn =
-    document.getElementById("downloadBtn");
-
-const status =
-    document.getElementById("status");
-
-const progressBox =
-    document.getElementById("progressBox");
-
-const progressBar =
-    document.getElementById("progressBar");
-
-const fileBox =
-    document.getElementById("fileBox");
-
-const fileName =
-    document.getElementById("fileName");
-
-const fileSize =
-    document.getElementById("fileSize");
-
-let selectedFile = null;
-let outputURL = null;
-
-
-/* -----------------------------
-   SELECT VIDEO
------------------------------ */
-
-fileInput.addEventListener(
-    "change",
-    function() {
-
-        const file =
-            this.files[0];
-
-        if (!file) {
-            return;
-        }
-
-        selectedFile = file;
-
-        fileBox.style.display = "block";
-
-        fileName.textContent =
-            file.name;
-
-        fileSize.textContent =
-            (file.size / 1024 / 1024)
-            .toFixed(2) + " MB";
-
-        prepareBtn.disabled = false;
-
-        downloadBtn.style.display = "none";
-
-        status.textContent =
-            "Video selected";
-
-        progressBar.style.width = "0%";
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
     }
-);
 
-
-/* -----------------------------
-   FFMPEG PROGRESS
------------------------------ */
-
-ffmpeg.setProgress(
-    ({ ratio }) => {
-
-        const percent =
-            Math.max(
-                0,
-                Math.min(
-                    100,
-                    Math.round(ratio * 100)
-                )
-            );
-
-        progressBar.style.width =
-            percent + "%";
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(255, 30, 60, .22), transparent 35%),
+        radial-gradient(circle at 90% 80%, rgba(255, 0, 40, .15), transparent 35%),
+        #090909;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
     }
-);
 
-
-/* -----------------------------
-   PREPARE VIDEO
------------------------------ */
-
-prepareBtn.addEventListener(
-    "click",
-    async function() {
-
-        if (!selectedFile) {
-            return;
-        }
-
-        prepareBtn.disabled = true;
-
-        progressBox.style.display =
-            "block";
-
-        status.textContent =
-            "Loading video engine...";
-
-        try {
-
-            /* Load FFmpeg */
-
-            if (!ffmpeg.isLoaded()) {
-
-                await ffmpeg.load();
-
-            }
-
-
-            status.textContent =
-                "Reading original video...";
-
-
-            /* Input */
-
-            const inputName =
-                "input.mp4";
-
-            const outputName =
-                "NEON_QUALITY.mp4";
-
-
-            /* Write original file */
-
-            ffmpeg.FS(
-                "writeFile",
-                inputName,
-                await fetchFile(
-                    selectedFile
-                )
-            );
-
-
-            status.textContent =
-                "Preparing MP4...";
-
-
-            /*
-             * IMPORTANT:
-             *
-             * Video = COPY
-             * Audio = COPY
-             *
-             * NO:
-             * CRF
-             * libx264
-             * bitrate change
-             * resolution change
-             * FPS change
-             *
-             */
-
-
-            await ffmpeg.run(
-
-                "-i",
-                inputName,
-
-                "-map",
-                "0:v:0",
-
-                "-c:v",
-                "copy",
-
-                "-map",
-                "0:a:0?",
-
-                "-c:a",
-                "copy",
-
-                "-map_metadata",
-                "0",
-
-                "-movflags",
-                "+faststart",
-
-                "-f",
-                "mp4",
-
-                outputName
-            );
-
-
-            status.textContent =
-                "Creating final video...";
-
-
-            /* Read output */
-
-            const data =
-                ffmpeg.FS(
-                    "readFile",
-                    outputName
-                );
-
-
-            const blob =
-                new Blob(
-                    [data.buffer],
-                    {
-                        type: "video/mp4"
-                    }
-                );
-
-
-            /* Create download URL */
-
-            if (outputURL) {
-
-                URL.revokeObjectURL(
-                    outputURL
-                );
-
-            }
-
-            outputURL =
-                URL.createObjectURL(
-                    blob
-                );
-
-
-            downloadBtn.style.display =
-                "block";
-
-            progressBar.style.width =
-                "100%";
-
-            status.textContent =
-                "✅ Ready — original video stream preserved";
-
-
-            /* Cleanup */
-
-            try {
-
-                ffmpeg.FS(
-                    "unlink",
-                    inputName
-                );
-
-                ffmpeg.FS(
-                    "unlink",
-                    outputName
-                );
-
-            } catch (e) {
-
-                console.log(
-                    "Cleanup:",
-                    e
-                );
-
-            }
-
-
-        } catch (error) {
-
-            console.error(error);
-
-            status.textContent =
-                "❌ Processing failed";
-
-        }
-
-        prepareBtn.disabled = false;
-
+    .app {
+      width: 100%;
+      max-width: 520px;
     }
-);
 
-
-/* -----------------------------
-   DOWNLOAD
------------------------------ */
-
-downloadBtn.addEventListener(
-    "click",
-    function() {
-
-        if (!outputURL) {
-            return;
-        }
-
-        const link =
-            document.createElement("a");
-
-        link.href =
-            outputURL;
-
-        link.download =
-            "NEON_QUALITY.mp4";
-
-        document.body.appendChild(
-            link
-        );
-
-        link.click();
-
-        document.body.removeChild(
-            link
-        );
-
+    .glass {
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.14);
+      box-shadow:
+        0 20px 60px rgba(0,0,0,.55),
+        inset 0 1px 0 rgba(255,255,255,.08);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border-radius: 28px;
+      padding: 28px;
     }
-);
 
-</script>
+    .logo {
+      text-align: center;
+      font-size: 30px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      margin-bottom: 8px;
+    }
 
-</body>
-</html>
-      border: 1px dashed rgba(255,255,255,.22);
+    .logo span {
+      color: #ff1738;
+    }
 
-      background: rgba(255,255,255,.035);
+    .subtitle {
+      text-align: center;
+      color: #aaa;
+      font-size: 13px;
+      margin-bottom: 25px;
+    }
 
+    .drop {
+      border: 1px dashed rgba(255,255,255,.28);
+      border-radius: 22px;
+      padding: 35px 20px;
       text-align: center;
       cursor: pointer;
-
+      background: rgba(255,255,255,.035);
       transition: .2s;
     }
 
-    .upload:hover {
-      border-color: rgba(255,23,68,.8);
-      background: rgba(255,23,68,.05);
+    .drop:hover {
+      border-color: #ff1738;
+      background: rgba(255,23,56,.07);
     }
 
-    .plus {
-      width: 58px;
-      height: 58px;
-
-      margin: auto;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      border-radius: 50%;
-
-      color: #ff1744;
-
-      background: rgba(255,23,68,.1);
-
-      border: 1px solid rgba(255,23,68,.3);
-
-      font-size: 32px;
+    .drop-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 8px;
     }
 
-    .upload-title {
-      margin-top: 13px;
-      font-size: 16px;
-      font-weight: 800;
+    .drop-text {
+      color: #999;
+      font-size: 13px;
     }
 
-    .upload-info {
-      margin-top: 7px;
-      color: #777;
-      font-size: 11px;
-    }
-
-    #videoInput {
+    #fileInput {
       display: none;
     }
 
-    .file {
+    .file-info {
       display: none;
-
-      margin-top: 14px;
-      padding: 13px;
-
-      border-radius: 14px;
-
-      background: rgba(255,255,255,.05);
-
-      border: 1px solid rgba(255,255,255,.08);
-    }
-
-    .file-title {
-      color: #777;
-      font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
+      margin-top: 18px;
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.06);
     }
 
     .file-name {
-      margin-top: 5px;
-      font-size: 12px;
-      font-weight: 700;
+      font-size: 14px;
       word-break: break-all;
+      font-weight: bold;
     }
 
     .file-size {
-      margin-top: 4px;
-      color: #777;
-      font-size: 10px;
+      margin-top: 5px;
+      color: #999;
+      font-size: 12px;
     }
 
     button {
       width: 100%;
-
-      margin-top: 17px;
-      padding: 16px;
-
       border: 0;
-      border-radius: 16px;
-
-      background:
-        linear-gradient(
-          135deg,
-          #ff1744,
-          #d50035
-        );
-
-      color: white;
-
+      border-radius: 17px;
+      padding: 16px;
+      margin-top: 18px;
       font-size: 15px;
-      font-weight: 900;
-
+      font-weight: 800;
       cursor: pointer;
-
       transition: .2s;
     }
 
-    button:hover {
-      transform: translateY(-1px);
+    #prepareBtn {
+      background: #ff1738;
+      color: white;
     }
 
-    button:disabled {
-      opacity: .35;
+    #prepareBtn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 30px rgba(255,23,56,.25);
+    }
+
+    #prepareBtn:disabled {
+      opacity: .45;
       cursor: not-allowed;
       transform: none;
+      box-shadow: none;
+    }
+
+    #downloadBtn {
+      display: none;
+      background: white;
+      color: #111;
     }
 
     .status {
+      margin-top: 18px;
+      text-align: center;
+      color: #bbb;
+      font-size: 13px;
+      line-height: 1.5;
       min-height: 20px;
-
-      margin-top: 15px;
-
-      text-align: center;
-
-      color: #aaa;
-
-      font-size: 12px;
-
-      line-height: 1.5;
-
-      word-break: break-word;
     }
 
-    .progress {
-      display: none;
-
-      height: 7px;
-
-      margin-top: 10px;
-
-      overflow: hidden;
-
-      border-radius: 99px;
-
-      background: rgba(255,255,255,.08);
-    }
-
-    .bar {
-      width: 0%;
-      height: 100%;
-
-      background: #ff1744;
-
-      border-radius: 99px;
-
-      transition: width .15s linear;
-    }
-
-    .error {
-      display: none;
-
-      margin-top: 13px;
-      padding: 12px;
-
-      border-radius: 13px;
-
-      background: rgba(255,0,50,.08);
-
-      border: 1px solid rgba(255,0,50,.25);
-
-      color: #ff8097;
-
-      font-size: 10px;
-
-      line-height: 1.5;
-
-      word-break: break-word;
-    }
-
-    .download {
-      display: none;
-      margin-top: 14px;
-    }
-
-    .download a {
-      display: block;
-
-      padding: 15px;
-
-      border-radius: 15px;
-
-      background: white;
-      color: #111;
-
-      text-align: center;
-
-      text-decoration: none;
-
-      font-size: 14px;
-      font-weight: 900;
-    }
-
-    .settings {
+    .details {
       margin-top: 22px;
-      padding: 16px;
-
-      border-radius: 18px;
-
-      background: rgba(255,255,255,.04);
-
-      border: 1px solid rgba(255,255,255,.07);
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,.1);
     }
 
-    .settings-title {
-      margin-bottom: 11px;
-
-      font-size: 12px;
-      font-weight: 900;
-    }
-
-    .row {
+    .detail-row {
       display: flex;
       justify-content: space-between;
-
       gap: 15px;
-
-      margin: 8px 0;
-
-      font-size: 10px;
+      padding: 7px 0;
+      font-size: 12px;
     }
 
-    .row span:first-child {
-      color: #777;
+    .detail-row span:first-child {
+      color: #888;
     }
 
-    .row span:last-child {
-      color: #ddd;
+    .detail-row span:last-child {
       text-align: right;
+      font-weight: bold;
     }
 
-    .footer {
-      margin-top: 15px;
-
+    .note {
+      margin-top: 20px;
       text-align: center;
-
-      color: #555;
-
-      font-size: 9px;
-
+      color: #777;
+      font-size: 11px;
       line-height: 1.5;
     }
 
-    @media (max-width: 420px) {
-      .glass {
-        padding: 20px;
-        border-radius: 23px;
-      }
-
-      .logo {
-        font-size: 26px;
-      }
-
-      .upload {
-        padding: 27px 15px;
-      }
+    .red {
+      color: #ff1738;
     }
   </style>
 </head>
@@ -968,7 +202,6 @@ downloadBtn.addEventListener(
 <body>
 
 <div class="app">
-
   <div class="glass">
 
     <div class="logo">
@@ -976,535 +209,285 @@ downloadBtn.addEventListener(
     </div>
 
     <div class="subtitle">
-      HIGH QUALITY VIDEO PROCESSOR
+      TikTok Video Preparation
     </div>
 
-    <div class="badge">
-      B MODE
-    </div>
-
-    <label
-      class="upload"
-      for="videoInput"
-    >
-      <div class="plus">+</div>
-
-      <div class="upload-title">
-        Select Video
-      </div>
-
-      <div class="upload-info">
-        MP4 • MOV • MKV • WebM
+    <label class="drop" for="fileInput">
+      <div class="drop-title">SELECT VIDEO</div>
+      <div class="drop-text">
+        Tap here to choose your MP4 video
       </div>
     </label>
 
     <input
-      id="videoInput"
+      id="fileInput"
       type="file"
-      accept="video/*"
+      accept="video/mp4,video/*"
     >
 
-    <div
-      id="fileBox"
-      class="file"
-    >
-      <div class="file-title">
-        Selected Video
-      </div>
-
-      <div
-        id="fileName"
-        class="file-name"
-      ></div>
-
-      <div
-        id="fileSize"
-        class="file-size"
-      ></div>
+    <div class="file-info" id="fileInfo">
+      <div class="file-name" id="fileName"></div>
+      <div class="file-size" id="fileSize"></div>
     </div>
 
-    <button
-      id="prepareBtn"
-      disabled
-    >
-      Prepare B Video
+    <button id="prepareBtn" disabled>
+      PREPARE VIDEO
     </button>
 
-    <div
-      id="status"
-      class="status"
-    >
-      Select a video first
+    <button id="downloadBtn">
+      DOWNLOAD VIDEO
+    </button>
+
+    <div class="status" id="status">
+      Select a video to begin.
     </div>
 
-    <div
-      id="progress"
-      class="progress"
-    >
-      <div
-        id="progressBar"
-        class="bar"
-      ></div>
-    </div>
-
-    <div
-      id="errorBox"
-      class="error"
-    ></div>
-
-    <div
-      id="downloadBox"
-      class="download"
-    >
-      <a
-        id="downloadLink"
-        href="#"
-        download="NEON_QUALITY_B.mp4"
-      >
-        Download B Video
-      </a>
-    </div>
-
-    <div class="settings">
-
-      <div class="settings-title">
-        B MODE SETTINGS
+    <div class="details">
+      <div class="detail-row">
+        <span>Video processing</span>
+        <span class="red">REMUX</span>
       </div>
 
-      <div class="row">
-        <span>Codec</span>
-        <span>H.264 High</span>
+      <div class="detail-row">
+        <span>Video re-encode</span>
+        <span>NO</span>
       </div>
 
-      <div class="row">
-        <span>Quality</span>
-        <span>CRF 16</span>
-      </div>
-
-      <div class="row">
-        <span>Preset</span>
-        <span>Slow</span>
-      </div>
-
-      <div class="row">
+      <div class="detail-row">
         <span>Resolution</span>
-        <span>Source</span>
+        <span>KEEP SOURCE</span>
       </div>
 
-      <div class="row">
+      <div class="detail-row">
         <span>FPS</span>
-        <span>Source</span>
+        <span>KEEP SOURCE</span>
       </div>
 
-      <div class="row">
-        <span>Pixel Format</span>
-        <span>YUV420P</span>
+      <div class="detail-row">
+        <span>Video codec</span>
+        <span>COPY</span>
       </div>
 
-      <div class="row">
-        <span>Audio</span>
-        <span>AAC 192k</span>
+      <div class="detail-row">
+        <span>Audio codec</span>
+        <span>COPY</span>
       </div>
 
-      <div class="row">
-        <span>Container</span>
+      <div class="detail-row">
         <span>MP4</span>
+        <span>FASTSTART</span>
       </div>
-
-      <div class="row">
-        <span>Fast Start</span>
-        <span>Enabled</span>
-      </div>
-
     </div>
 
-    <div class="footer">
-      B mode keeps source resolution and FPS.
+    <div class="note">
+      NEON QUALITY processes the video locally in your browser.
+      <br>
+      No video is uploaded to a server.
     </div>
 
   </div>
-
 </div>
 
-<script type="module">
+<script>
+  const { createFFmpeg, fetchFile } = FFmpeg;
 
-import {
-  createFFmpeg,
-  fetchFile
-} from "./ffmpeg.js";
-
-
-const videoInput =
-  document.getElementById("videoInput");
-
-const prepareBtn =
-  document.getElementById("prepareBtn");
-
-const fileBox =
-  document.getElementById("fileBox");
-
-const fileName =
-  document.getElementById("fileName");
-
-const fileSize =
-  document.getElementById("fileSize");
-
-const status =
-  document.getElementById("status");
-
-const progress =
-  document.getElementById("progress");
-
-const progressBar =
-  document.getElementById("progressBar");
-
-const errorBox =
-  document.getElementById("errorBox");
-
-const downloadBox =
-  document.getElementById("downloadBox");
-
-const downloadLink =
-  document.getElementById("downloadLink");
-
-
-let selectedFile = null;
-let outputUrl = null;
-let ffmpeg = null;
-
-
-function formatBytes(bytes) {
-
-  if (!bytes) {
-    return "0 Bytes";
-  }
-
-  const units = [
-    "Bytes",
-    "KB",
-    "MB",
-    "GB"
-  ];
-
-  const index =
-    Math.floor(
-      Math.log(bytes) /
-      Math.log(1024)
-    );
-
-  return (
-    (
-      bytes /
-      Math.pow(1024, index)
-    ).toFixed(2)
-    + " "
-    + units[index]
-  );
-}
-
-
-function createEngine() {
-
-  if (ffmpeg) {
-    return ffmpeg;
-  }
-
-  ffmpeg = createFFmpeg({
-    log: true,
-    corePath: "./ffmpeg-core.js"
+  const ffmpeg = createFFmpeg({
+    log: false,
+    corePath:
+      "https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js"
   });
 
-  ffmpeg.setProgress(
-    ({ ratio }) => {
+  const fileInput = document.getElementById("fileInput");
+  const prepareBtn = document.getElementById("prepareBtn");
+  const downloadBtn = document.getElementById("downloadBtn");
 
-      if (
-        typeof ratio !== "number" ||
-        !isFinite(ratio)
-      ) {
-        return;
-      }
+  const fileInfo = document.getElementById("fileInfo");
+  const fileName = document.getElementById("fileName");
+  const fileSize = document.getElementById("fileSize");
+  const status = document.getElementById("status");
 
-      const percent =
-        Math.max(
-          0,
-          Math.min(
-            100,
-            Math.round(ratio * 100)
-          )
-        );
+  let selectedFile = null;
+  let outputBlob = null;
+  let outputUrl = null;
 
-      progressBar.style.width =
-        percent + "%";
-
-      status.textContent =
-        "Encoding B video... "
-        + percent
-        + "%";
+  function formatSize(bytes) {
+    if (bytes < 1024 * 1024) {
+      return (bytes / 1024).toFixed(1) + " KB";
     }
-  );
 
-  return ffmpeg;
-}
+    return (bytes / 1024 / 1024).toFixed(2) + " MB";
+  }
 
+  fileInput.addEventListener("change", function () {
 
-videoInput.addEventListener(
-  "change",
-  () => {
+    if (!this.files || !this.files[0]) {
+      return;
+    }
 
-    selectedFile =
-      videoInput.files &&
-      videoInput.files[0]
-        ? videoInput.files[0]
-        : null;
+    selectedFile = this.files[0];
 
-    errorBox.style.display =
-      "none";
+    fileName.textContent = selectedFile.name;
+    fileSize.textContent = formatSize(selectedFile.size);
 
-    downloadBox.style.display =
-      "none";
+    fileInfo.style.display = "block";
+
+    prepareBtn.disabled = false;
+    downloadBtn.style.display = "none";
+
+    status.textContent = "Ready to prepare video.";
+
+    outputBlob = null;
 
     if (outputUrl) {
-
-      URL.revokeObjectURL(
-        outputUrl
-      );
-
+      URL.revokeObjectURL(outputUrl);
       outputUrl = null;
     }
-
-    if (!selectedFile) {
-
-      fileBox.style.display =
-        "none";
-
-      prepareBtn.disabled =
-        true;
-
-      status.textContent =
-        "Select a video first";
-
-      return;
-    }
-
-    fileBox.style.display =
-      "block";
-
-    fileName.textContent =
-      selectedFile.name;
-
-    fileSize.textContent =
-      formatBytes(
-        selectedFile.size
-      );
-
-    prepareBtn.disabled =
-      false;
-
-    status.textContent =
-      "Ready — B mode";
-  }
-);
+  });
 
 
-prepareBtn.addEventListener(
-  "click",
-  async () => {
+  prepareBtn.addEventListener("click", async function () {
 
     if (!selectedFile) {
       return;
     }
 
-    prepareBtn.disabled =
-      true;
-
-    errorBox.style.display =
-      "none";
-
-    downloadBox.style.display =
-      "none";
-
-    progress.style.display =
-      "block";
-
-    progressBar.style.width =
-      "0%";
+    prepareBtn.disabled = true;
+    downloadBtn.style.display = "none";
 
     try {
 
-      if (
-        typeof window.createFFmpegCore ===
-        "undefined"
-      ) {
+      status.textContent = "Loading video engine...";
 
-        throw new Error(
-          "ffmpeg-core.js did not create window.createFFmpegCore"
-        );
+      if (!ffmpeg.isLoaded()) {
+        await ffmpeg.load();
       }
 
+      /*
+       * IMPORTANT:
+       *
+       * -c:v copy
+       *     Do NOT re-encode the H.264 video.
+       *
+       * -c:a copy
+       *     Do NOT re-encode AAC audio.
+       *
+       * -map 0:v:0
+       *     Keep the first video stream.
+       *
+       * -map 0:a?
+       *     Keep available audio streams.
+       *
+       * -map_metadata 0
+       *     Preserve source metadata.
+       *
+       * +faststart
+       *     Move MP4 moov atom for progressive playback.
+       */
 
-      const engine =
-        createEngine();
+      const inputName = "input.mp4";
+      const outputName = "NEON_QUALITY.mp4";
 
+      status.textContent = "Preparing video...";
 
-      if (!engine.isLoaded()) {
-
-        status.textContent =
-          "Loading FFmpeg...";
-
-        await engine.load();
-      }
-
-
-      status.textContent =
-        "FFmpeg ready";
-
-
-      const inputName =
-        "NEON_INPUT.mp4";
-
-      const outputName =
-        "NEON_QUALITY_B.mp4";
-
-
-      status.textContent =
-        "Reading video...";
-
-
-      engine.FS(
+      ffmpeg.FS(
         "writeFile",
         inputName,
-        await fetchFile(
-          selectedFile
-        )
+        await fetchFile(selectedFile)
       );
 
+      await ffmpeg.run(
+        "-i",
+        inputName,
 
-      export function buildRemuxArgs(
-  inputName: string,
-  outputName: string
-): string[] {
-  return [
-    "-i", inputName,
+        "-map",
+        "0:v:0",
 
-    // Original video ကို လုံးဝမပြန် encode
-    "-map", "0:v:0",
-    "-c:v", "copy",
+        "-map",
+        "0:a?",
 
-    // Original audio ကို copy
-    "-map", "0:a:0?",
-    "-c:a", "copy",
+        "-c:v",
+        "copy",
 
-    // MP4 compatibility
-    "-map_metadata", "0",
-    "-movflags", "+faststart",
+        "-c:a",
+        "copy",
 
-    // MP4 output
-    "-f", "mp4",
+        "-map_metadata",
+        "0",
 
-    outputName,
-  ];
-}
+        "-movflags",
+        "+faststart",
 
+        "-f",
+        "mp4",
 
-      status.textContent =
-        "Encoding B video...";
-
-
-      await engine.run(
-        ...args
+        outputName
       );
 
+      status.textContent = "Finalizing MP4...";
 
-      status.textContent =
-        "Preparing download...";
+      const data = ffmpeg.FS(
+        "readFile",
+        outputName
+      );
 
+      outputBlob = new Blob(
+        [data.buffer],
+        { type: "video/mp4" }
+      );
 
-      const data =
-        engine.FS(
-          "readFile",
-          outputName
-        );
+      outputUrl = URL.createObjectURL(outputBlob);
 
-
-      const blob =
-        new Blob(
-          [data.buffer],
-          {
-            type:
-              "video/mp4"
-          }
-        );
-
-
-      outputUrl =
-        URL.createObjectURL(
-          blob
-        );
-
-
-      downloadLink.href =
-        outputUrl;
-
-      downloadLink.download =
-        "NEON_QUALITY_B.mp4";
-
-
-      downloadBox.style.display =
-        "block";
-
-
-      progressBar.style.width =
-        "100%";
-
-
-      status.textContent =
-        "B video ready ✓";
-
+      /*
+       * Clean FFmpeg memory
+       */
+      try {
+        ffmpeg.FS("unlink", inputName);
+      } catch (e) {}
 
       try {
-        engine.FS(
-          "unlink",
-          inputName
-        );
-      } catch (_) {}
+        ffmpeg.FS("unlink", outputName);
+      } catch (e) {}
 
+      status.innerHTML =
+        "✓ Video prepared successfully.<br>" +
+        "Original video stream was copied without re-encoding.";
 
-      try {
-        engine.FS(
-          "unlink",
-          outputName
-        );
-      } catch (_) {}
-
+      downloadBtn.style.display = "block";
 
     } catch (error) {
 
-      console.error(
-        "NEON QUALITY B ERROR:",
-        error
-      );
-
-      errorBox.style.display =
-        "block";
-
-      errorBox.textContent =
-        "FFmpeg Error: " +
-        (
-          error?.message ||
-          String(error)
-        );
+      console.error(error);
 
       status.textContent =
-        "B processing failed";
-
+        "Processing failed. Please try another MP4 video.";
 
     } finally {
 
-      prepareBtn.disabled =
-        false;
+      prepareBtn.disabled = false;
+
     }
-  }
-);
+
+  });
+
+
+  downloadBtn.addEventListener("click", function () {
+
+    if (!outputUrl) {
+      return;
+    }
+
+    const a = document.createElement("a");
+
+    a.href = outputUrl;
+    a.download = "NEON_QUALITY.mp4";
+
+    document.body.appendChild(a);
+
+    a.click();
+
+    a.remove();
+
+  });
 
 </script>
 
