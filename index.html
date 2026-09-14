@@ -6,109 +6,826 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>NEON BASE — Video Compressor</title>
+  <title>NEON BASE</title>
 
   <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
 
-<style>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-*{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
+    body {
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      color: white;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(255,0,40,.18), transparent 30%),
+        radial-gradient(circle at 80% 80%, rgba(255,0,40,.12), transparent 30%),
+        #050505;
+      display: flex;
+      justify-content: center;
+      padding: 25px 15px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 650px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .logo {
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: 5px;
+    }
+
+    .subtitle {
+      margin-top: 8px;
+      color: #aaa;
+      font-size: 13px;
+      letter-spacing: 2px;
+    }
+
+    .card {
+      background: rgba(255,255,255,.055);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 24px;
+      padding: 20px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 20px 60px rgba(0,0,0,.4);
+      margin-bottom: 15px;
+    }
+
+    .upload {
+      border: 2px dashed rgba(255,255,255,.2);
+      border-radius: 20px;
+      padding: 45px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: .2s;
+    }
+
+    .upload:hover,
+    .upload.drag {
+      border-color: #ff1830;
+      background: rgba(255,24,48,.06);
+    }
+
+    .upload-icon {
+      font-size: 42px;
+      margin-bottom: 12px;
+    }
+
+    .upload-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .upload-sub {
+      color: #888;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .file-name {
+      margin-top: 15px;
+      padding: 12px;
+      background: rgba(255,255,255,.06);
+      border-radius: 12px;
+      font-size: 13px;
+      color: #ddd;
+      word-break: break-all;
+      display: none;
+    }
+
+    .section-title {
+      font-size: 12px;
+      color: #999;
+      letter-spacing: 2px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+
+    .selection {
+      width: 100%;
+      padding: 15px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.12);
+      color: white;
+      font-size: 15px;
+      outline: none;
+    }
+
+    .selection option {
+      background: #111;
+      color: white;
+    }
+
+    .compress-btn {
+      width: 100%;
+      border: 0;
+      border-radius: 16px;
+      padding: 17px;
+      margin-top: 15px;
+      background: #ff1830;
+      color: white;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: .2s;
+    }
+
+    .compress-btn:hover {
+      background: #ff3045;
+      transform: translateY(-1px);
+    }
+
+    .compress-btn:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .progress-box {
+      display: none;
+      margin-top: 18px;
+    }
+
+    .progress-text {
+      display: flex;
+      justify-content: space-between;
+      color: #aaa;
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    .progress {
+      height: 8px;
+      background: rgba(255,255,255,.08);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .bar {
+      height: 100%;
+      width: 0%;
+      background: #ff1830;
+      transition: width .2s;
+    }
+
+    .status {
+      margin-top: 12px;
+      text-align: center;
+      color: #aaa;
+      font-size: 13px;
+      min-height: 20px;
+    }
+
+    .stats {
+      display: none;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .stat {
+      background: rgba(255,255,255,.055);
+      border-radius: 14px;
+      padding: 15px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: #777;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .saved {
+      color: #ff4055;
+    }
+
+    .download {
+      display: none;
+      width: 100%;
+      text-align: center;
+      text-decoration: none;
+      background: white;
+      color: black;
+      border-radius: 15px;
+      padding: 16px;
+      margin-top: 15px;
+      font-weight: 800;
+    }
+
+    .info {
+      text-align: center;
+      color: #666;
+      font-size: 11px;
+      line-height: 1.7;
+    }
+
+    .error {
+      color: #ff4055;
+    }
+
+    .success {
+      color: #ddd;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <div class="header">
+    <div class="logo">NEON BASE</div>
+    <div class="subtitle">VIDEO SIZE OPTIMIZER</div>
+  </div>
+
+  <div class="card">
+
+    <div class="upload" id="uploadArea">
+      <div class="upload-icon">＋</div>
+      <div class="upload-title">Select Video</div>
+      <div class="upload-sub">
+        MP4 / MOV / WEBM
+      </div>
+    </div>
+
+    <input
+      type="file"
+      id="fileInput"
+      accept="video/*"
+    >
+
+    <div class="file-name" id="fileName"></div>
+
+  </div>
+
+
+  <div class="card">
+
+    <div class="section-title">Compression</div>
+
+    <select class="selection" id="quality">
+      <option value="small">SMALLER FILE</option>
+    </select>
+
+    <button
+      class="compress-btn"
+      id="compressBtn"
+      disabled
+    >
+      COMPRESS VIDEO
+    </button>
+
+    <div class="progress-box" id="progressBox">
+
+      <div class="progress-text">
+        <span id="progressStatus">Preparing...</span>
+        <span id="progressPercent">0%</span>
+      </div>
+
+      <div class="progress">
+        <div class="bar" id="progressBar"></div>
+      </div>
+
+      <div class="status" id="status"></div>
+
+    </div>
+
+  </div>
+
+
+  <div class="card">
+
+    <div class="stats" id="stats">
+
+      <div class="stat">
+        <div class="stat-label">Original</div>
+        <div class="stat-value" id="originalSize">-</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-label">Compressed</div>
+        <div class="stat-value" id="compressedSize">-</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-label">Saved</div>
+        <div class="stat-value saved" id="savedSize">-</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-label">Reduction</div>
+        <div class="stat-value saved" id="reduction">-</div>
+      </div>
+
+    </div>
+
+    <a
+      class="download"
+      id="downloadBtn"
+      download="Neon_base.mp4"
+    >
+      DOWNLOAD VIDEO
+    </a>
+
+  </div>
+
+
+  <div class="card info">
+    Processing happens in your browser.<br>
+    The original resolution and FPS are preserved.<br>
+    NEON BASE automatically tries to make the output smaller.
+  </div>
+
+</div>
+
+
+<script>
+
+const { createFFmpeg, fetchFile } = FFmpeg;
+
+const ffmpeg = createFFmpeg({
+  log: false
+});
+
+let selectedFile = null;
+let outputUrl = null;
+
+
+const uploadArea = document.getElementById("uploadArea");
+const fileInput = document.getElementById("fileInput");
+const fileName = document.getElementById("fileName");
+const compressBtn = document.getElementById("compressBtn");
+
+const progressBox = document.getElementById("progressBox");
+const progressBar = document.getElementById("progressBar");
+const progressPercent = document.getElementById("progressPercent");
+const progressStatus = document.getElementById("progressStatus");
+const statusBox = document.getElementById("status");
+
+const stats = document.getElementById("stats");
+const originalSize = document.getElementById("originalSize");
+const compressedSize = document.getElementById("compressedSize");
+const savedSize = document.getElementById("savedSize");
+const reduction = document.getElementById("reduction");
+
+const downloadBtn = document.getElementById("downloadBtn");
+
+
+function formatBytes(bytes) {
+
+  if (!bytes) return "0 B";
+
+  const units = [
+    "B",
+    "KB",
+    "MB",
+    "GB"
+  ];
+
+  const i = Math.floor(
+    Math.log(bytes) / Math.log(1024)
+  );
+
+  return (
+    bytes / Math.pow(1024, i)
+  ).toFixed(2) + " " + units[i];
+
 }
 
-:root{
-  --red:#e50920;
-  --red2:#ff1830;
-  --white:#fff;
-  --muted:#a9a9a9;
-  --black:#070707;
-  --card:#101010;
-  --line:#292929;
-}
 
-body{
-  font-family:Arial,Helvetica,sans-serif;
-  background:#070707;
-  color:white;
-  min-height:100vh;
-  overflow-x:hidden;
-}
+function resetResult() {
 
-/* GALAXY */
+  stats.style.display = "none";
+  downloadBtn.style.display = "none";
 
-.galaxy{
-  position:fixed;
-  inset:0;
-  overflow:hidden;
-  pointer-events:none;
-  z-index:-1;
-
-  background:
-    radial-gradient(
-      circle at 20% 20%,
-      rgba(229,9,32,.12),
-      transparent 28%
-    ),
-    radial-gradient(
-      circle at 80% 70%,
-      rgba(255,30,50,.08),
-      transparent 30%
-    ),
-    #070707;
-}
-
-.galaxy::before,
-.galaxy::after{
-  content:"";
-  position:absolute;
-
-  width:500px;
-  height:500px;
-
-  border-radius:50%;
-
-  left:50%;
-  top:45%;
-
-  transform:translate(-50%,-50%);
-
-  border:1px solid rgba(255,255,255,.08);
-
-  box-shadow:
-    0 0 80px rgba(229,9,32,.12),
-    inset 0 0 80px rgba(229,9,32,.06);
-
-  animation:spin 30s linear infinite;
-}
-
-.galaxy::after{
-  width:800px;
-  height:250px;
-
-  transform:
-    translate(-50%,-50%)
-    rotate(-25deg);
-
-  animation:spin2 45s linear infinite;
-}
-
-@keyframes spin{
-  to{
-    transform:
-      translate(-50%,-50%)
-      rotate(360deg);
+  if (outputUrl) {
+    URL.revokeObjectURL(outputUrl);
+    outputUrl = null;
   }
+
 }
 
-@keyframes spin2{
-  to{
-    transform:
-      translate(-50%,-50%)
-      rotate(335deg);
-  }
+
+uploadArea.addEventListener("click", () => {
+  fileInput.click();
+});
+
+
+fileInput.addEventListener("change", () => {
+
+  if (!fileInput.files.length) return;
+
+  selectedFile = fileInput.files[0];
+
+  showSelectedFile();
+
+});
+
+
+function showSelectedFile() {
+
+  fileName.textContent =
+    selectedFile.name +
+    " • " +
+    formatBytes(selectedFile.size);
+
+  fileName.style.display = "block";
+
+  compressBtn.disabled = false;
+
+  resetResult();
+
 }
+
+
+uploadArea.addEventListener("dragover", (e) => {
+
+  e.preventDefault();
+
+  uploadArea.classList.add("drag");
+
+});
+
+
+uploadArea.addEventListener("dragleave", () => {
+
+  uploadArea.classList.remove("drag");
+
+});
+
+
+uploadArea.addEventListener("drop", (e) => {
+
+  e.preventDefault();
+
+  uploadArea.classList.remove("drag");
+
+  const files = e.dataTransfer.files;
+
+  if (!files.length) return;
+
+  const file = files[0];
+
+  if (!file.type.startsWith("video/")) {
+
+    alert("Please select a video file.");
+
+    return;
+
+  }
+
+  selectedFile = file;
+
+  showSelectedFile();
+
+});
+
+
+ffmpeg.setProgress(({ ratio }) => {
+
+  if (!isFinite(ratio)) return;
+
+  const percent =
+    Math.max(
+      0,
+      Math.min(
+        100,
+        Math.round(ratio * 100)
+      )
+    );
+
+  progressBar.style.width =
+    percent + "%";
+
+  progressPercent.textContent =
+    percent + "%";
+
+});
+
+
+async function loadFFmpeg() {
+
+  if (!ffmpeg.isLoaded()) {
+
+    progressStatus.textContent =
+      "Loading encoder...";
+
+    await ffmpeg.load();
+
+  }
+
+}
+
+
+function getInputExtension(file) {
+
+  const name =
+    file.name.toLowerCase();
+
+  if (name.endsWith(".mov"))
+    return "mov";
+
+  if (name.endsWith(".webm"))
+    return "webm";
+
+  return "mp4";
+
+}
+
+
+async function compressWithCRF(
+  inputName,
+  outputName,
+  crf
+) {
+
+  try {
+
+    ffmpeg.FS(
+      "unlink",
+      outputName
+    );
+
+  } catch (e) {}
+
+  await ffmpeg.run(
+
+    "-i",
+    inputName,
+
+    "-map",
+    "0:v:0",
+
+    "-map",
+    "0:a:0?",
+
+    "-c:v",
+    "libx264",
+
+    "-preset",
+    "medium",
+
+    "-crf",
+    String(crf),
+
+    "-pix_fmt",
+    "yuv420p",
+
+    "-c:a",
+    "aac",
+
+    "-b:a",
+    "96k",
+
+    "-movflags",
+    "+faststart",
+
+    "-threads",
+    "0",
+
+    outputName
+
+  );
+
+  const data =
+    ffmpeg.FS(
+      "readFile",
+      outputName
+    );
+
+  return new Uint8Array(data);
+
+}
+
+
+compressBtn.addEventListener(
+  "click",
+  async () => {
+
+    if (!selectedFile) return;
+
+    compressBtn.disabled = true;
+
+    progressBox.style.display =
+      "block";
+
+    stats.style.display =
+      "none";
+
+    downloadBtn.style.display =
+      "none";
+
+    statusBox.className =
+      "status";
+
+    try {
+
+      await loadFFmpeg();
+
+      const inputName =
+        "input." +
+        getInputExtension(selectedFile);
+
+      const outputName =
+        "Neon_base.mp4";
+
+      progressStatus.textContent =
+        "Preparing video...";
+
+      progressBar.style.width =
+        "0%";
+
+      ffmpeg.FS(
+        "writeFile",
+        inputName,
+        await fetchFile(selectedFile)
+      );
+
+
+      /*
+        First attempt:
+        CRF 24 = good size reduction
+      */
+
+      let crf = 24;
+
+      let result =
+        await compressWithCRF(
+          inputName,
+          outputName,
+          crf
+        );
+
+
+      /*
+        If output is still too large,
+        automatically compress again.
+      */
+
+      while (
+        result.length >= selectedFile.size &&
+        crf < 30
+      ) {
+
+        crf += 3;
+
+        progressStatus.textContent =
+          "Reducing file size...";
+
+        result =
+          await compressWithCRF(
+            inputName,
+            outputName,
+            crf
+          );
+
+      }
+
+
+      const blob =
+        new Blob(
+          [result],
+          { type: "video/mp4" }
+        );
+
+
+      outputUrl =
+        URL.createObjectURL(blob);
+
+
+      const original =
+        selectedFile.size;
+
+      const compressed =
+        blob.size;
+
+
+      const saved =
+        original - compressed;
+
+
+      const percent =
+        (saved / original) * 100;
+
+
+      originalSize.textContent =
+        formatBytes(original);
+
+      compressedSize.textContent =
+        formatBytes(compressed);
+
+
+      if (saved > 0) {
+
+        savedSize.textContent =
+          formatBytes(saved);
+
+        reduction.textContent =
+          percent.toFixed(1) + "%";
+
+        statusBox.textContent =
+          "Compression complete.";
+
+        statusBox.className =
+          "status success";
+
+      } else {
+
+        savedSize.textContent =
+          "0 B";
+
+        reduction.textContent =
+          "0%";
+
+        statusBox.textContent =
+          "This video is already highly compressed.";
+
+        statusBox.className =
+          "status";
+
+      }
+
+
+      stats.style.display =
+        "grid";
+
+
+      downloadBtn.href =
+        outputUrl;
+
+      downloadBtn.style.display =
+        "block";
+
+
+      progressBar.style.width =
+        "100%";
+
+      progressPercent.textContent =
+        "100%";
+
+      progressStatus.textContent =
+        "Complete";
+
+
+      /*
+        Clean input file
+      */
+
+      try {
+
+        ffmpeg.FS(
+          "unlink",
+          inputName
+        );
+
+      } catch (e) {}
+
+
+    } catch (error) {
+
+      console.error(error);
+
+      statusBox.textContent =
+        "Compression failed. Try another MP4 video.";
+
+      statusBox.className =
+        "status error";
+
+    }
+
+
+    compressBtn.disabled = false;
+
+  }
+);
+
+</script>
+
+</body>
+</html>}
 
 .stars{
   position:absolute;
