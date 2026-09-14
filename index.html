@@ -2,113 +2,642 @@
 <html lang="en">
 <head>
   <script src="coi-serviceworker.js"></script>
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>NEON BASE — Video Compressor</title>
+  <title>NEON BASE</title>
 
   <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
 
   <style>
-  *{
-    box-sizing:border-box;
-    margin:0;
-    padding:0;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 25px 15px;
+      font-family: Arial, sans-serif;
+      color: #fff;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(255, 0, 45, .18), transparent 30%),
+        radial-gradient(circle at 80% 80%, rgba(255, 0, 45, .12), transparent 30%),
+        #050505;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 620px;
+    }
+
+    .logo {
+      text-align: center;
+      font-size: 30px;
+      font-weight: 900;
+      letter-spacing: 5px;
+      margin: 10px 0 25px;
+    }
+
+    .card {
+      padding: 20px;
+      margin-bottom: 15px;
+      border-radius: 24px;
+      background: rgba(255,255,255,.055);
+      border: 1px solid rgba(255,255,255,.12);
+      backdrop-filter: blur(20px);
+    }
+
+    .upload {
+      padding: 45px 20px;
+      text-align: center;
+      border: 2px dashed rgba(255,255,255,.2);
+      border-radius: 20px;
+      cursor: pointer;
+    }
+
+    .upload:hover {
+      border-color: #ff1830;
+      background: rgba(255,24,48,.06);
+    }
+
+    .upload-icon {
+      width: 55px;
+      height: 55px;
+      margin: 0 auto 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: #ff1830;
+      font-size: 32px;
+    }
+
+    .file-name {
+      display: none;
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.06);
+      color: #ccc;
+      font-size: 13px;
+      word-break: break-all;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    select {
+      width: 100%;
+      padding: 15px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 14px;
+      outline: none;
+      background: rgba(255,255,255,.07);
+      color: #fff;
+      font-size: 15px;
+    }
+
+    option {
+      background: #111;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 15px;
+      padding: 17px;
+      border: 0;
+      border-radius: 16px;
+      background: #ff1830;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+
+    .progress {
+      display: none;
+      height: 7px;
+      margin-top: 18px;
+      overflow: hidden;
+      border-radius: 20px;
+      background: rgba(255,255,255,.08);
+    }
+
+    .bar {
+      width: 0%;
+      height: 100%;
+      background: #ff1830;
+      transition: width .2s;
+    }
+
+    .result {
+      display: none;
+      margin-top: 15px;
+      text-align: center;
+    }
+
+    .sizes {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .size {
+      flex: 1;
+      padding: 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.06);
+    }
+
+    .size small {
+      display: block;
+      color: #777;
+      margin-bottom: 5px;
+    }
+
+    .size strong {
+      font-size: 16px;
+    }
+
+    .download {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      border-radius: 15px;
+      background: #fff;
+      color: #000;
+      text-decoration: none;
+      font-weight: 800;
+    }
+
+    .error {
+      display: none;
+      margin-top: 12px;
+      color: #ff4055;
+      text-align: center;
+      font-size: 13px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="app">
+
+    <div class="logo">NEON BASE</div>
+
+    <div class="card">
+
+      <div class="upload" id="uploadArea">
+        <div class="upload-icon">+</div>
+      </div>
+
+      <input
+        type="file"
+        id="fileInput"
+        accept="video/*"
+      >
+
+      <div class="file-name" id="fileName"></div>
+
+    </div>
+
+    <div class="card">
+
+      <select id="compression">
+        <option value="small">SMALLER FILE</option>
+      </select>
+
+      <button id="compressBtn" disabled>
+        COMPRESS
+      </button>
+
+      <div class="progress" id="progress">
+        <div class="bar" id="bar"></div>
+      </div>
+
+      <div class="error" id="error"></div>
+
+    </div>
+
+    <div class="card result" id="result">
+
+      <div class="sizes">
+
+        <div class="size">
+          <small>ORIGINAL</small>
+          <strong id="originalSize">-</strong>
+        </div>
+
+        <div class="size">
+          <small>OUTPUT</small>
+          <strong id="outputSize">-</strong>
+        </div>
+
+      </div>
+
+      <a
+        id="download"
+        class="download"
+        download="Neon_base.mp4"
+      >
+        DOWNLOAD
+      </a>
+
+    </div>
+
+  </div>
+
+<script>
+
+const { createFFmpeg, fetchFile } = FFmpeg;
+
+const ffmpeg = createFFmpeg({
+  log: false
+});
+
+let selectedFile = null;
+let outputURL = null;
+
+const uploadArea =
+  document.getElementById("uploadArea");
+
+const fileInput =
+  document.getElementById("fileInput");
+
+const fileName =
+  document.getElementById("fileName");
+
+const compressBtn =
+  document.getElementById("compressBtn");
+
+const progress =
+  document.getElementById("progress");
+
+const bar =
+  document.getElementById("bar");
+
+const result =
+  document.getElementById("result");
+
+const originalSize =
+  document.getElementById("originalSize");
+
+const outputSize =
+  document.getElementById("outputSize");
+
+const download =
+  document.getElementById("download");
+
+const errorBox =
+  document.getElementById("error");
+
+
+function formatBytes(bytes) {
+
+  if (bytes < 1024)
+    return bytes + " B";
+
+  if (bytes < 1024 * 1024)
+    return (bytes / 1024).toFixed(1) + " KB";
+
+  if (bytes < 1024 * 1024 * 1024)
+    return (bytes / 1024 / 1024).toFixed(2) + " MB";
+
+  return (bytes / 1024 / 1024 / 1024).toFixed(2) + " GB";
+}
+
+
+function getExtension(name) {
+
+  const lower =
+    name.toLowerCase();
+
+  if (lower.endsWith(".mov"))
+    return "mov";
+
+  if (lower.endsWith(".webm"))
+    return "webm";
+
+  return "mp4";
+}
+
+
+uploadArea.onclick = () => {
+  fileInput.click();
+};
+
+
+fileInput.onchange = () => {
+
+  if (!fileInput.files.length)
+    return;
+
+  selectedFile =
+    fileInput.files[0];
+
+  fileName.textContent =
+    selectedFile.name +
+    " • " +
+    formatBytes(selectedFile.size);
+
+  fileName.style.display =
+    "block";
+
+  compressBtn.disabled =
+    false;
+
+  result.style.display =
+    "none";
+
+  errorBox.style.display =
+    "none";
+};
+
+
+uploadArea.ondragover = (e) => {
+  e.preventDefault();
+};
+
+
+uploadArea.ondrop = (e) => {
+
+  e.preventDefault();
+
+  if (!e.dataTransfer.files.length)
+    return;
+
+  const file =
+    e.dataTransfer.files[0];
+
+  if (!file.type.startsWith("video/"))
+    return;
+
+  selectedFile = file;
+
+  fileName.textContent =
+    selectedFile.name +
+    " • " +
+    formatBytes(selectedFile.size);
+
+  fileName.style.display =
+    "block";
+
+  compressBtn.disabled =
+    false;
+
+  result.style.display =
+    "none";
+};
+
+
+ffmpeg.setProgress(({ ratio }) => {
+
+  if (!isFinite(ratio))
+    return;
+
+  const value =
+    Math.max(
+      0,
+      Math.min(
+        100,
+        ratio * 100
+      )
+    );
+
+  bar.style.width =
+    value + "%";
+});
+
+
+async function encode(
+  inputName,
+  outputName,
+  crf
+) {
+
+  try {
+    ffmpeg.FS(
+      "unlink",
+      outputName
+    );
+  } catch {}
+
+  await ffmpeg.run(
+
+    "-i",
+    inputName,
+
+    "-map",
+    "0:v:0",
+
+    "-map",
+    "0:a:0?",
+
+    "-c:v",
+    "libx264",
+
+    "-preset",
+    "medium",
+
+    "-crf",
+    String(crf),
+
+    "-pix_fmt",
+    "yuv420p",
+
+    "-c:a",
+    "aac",
+
+    "-b:a",
+    "96k",
+
+    "-movflags",
+    "+faststart",
+
+    "-threads",
+    "0",
+
+    outputName
+  );
+
+  const data =
+    ffmpeg.FS(
+      "readFile",
+      outputName
+    );
+
+  return new Uint8Array(data);
+}
+
+
+compressBtn.onclick =
+async () => {
+
+  if (!selectedFile)
+    return;
+
+  compressBtn.disabled =
+    true;
+
+  progress.style.display =
+    "block";
+
+  bar.style.width =
+    "0%";
+
+  result.style.display =
+    "none";
+
+  errorBox.style.display =
+    "none";
+
+  try {
+
+    if (!ffmpeg.isLoaded())
+      await ffmpeg.load();
+
+    const ext =
+      getExtension(
+        selectedFile.name
+      );
+
+    const inputName =
+      "input." + ext;
+
+    const outputName =
+      "Neon_base.mp4";
+
+    ffmpeg.FS(
+      "writeFile",
+      inputName,
+      await fetchFile(selectedFile)
+    );
+
+
+    /*
+      Quality-first size reduction.
+      Try CRF 22 first.
+      If still larger than original,
+      increase compression automatically.
+    */
+
+    const crfList = [
+      22,
+      25,
+      28
+    ];
+
+    let finalData = null;
+
+    for (const crf of crfList) {
+
+      const data =
+        await encode(
+          inputName,
+          outputName,
+          crf
+        );
+
+      if (
+        data.length <
+        selectedFile.size
+      ) {
+
+        finalData = data;
+        break;
+
+      }
+
+      finalData = data;
+    }
+
+
+    const blob =
+      new Blob(
+        [finalData],
+        {
+          type: "video/mp4"
+        }
+      );
+
+
+    if (outputURL)
+      URL.revokeObjectURL(
+        outputURL
+      );
+
+    outputURL =
+      URL.createObjectURL(blob);
+
+
+    originalSize.textContent =
+      formatBytes(
+        selectedFile.size
+      );
+
+    outputSize.textContent =
+      formatBytes(
+        blob.size
+      );
+
+    download.href =
+      outputURL;
+
+    result.style.display =
+      "block";
+
+    bar.style.width =
+      "100%";
+
+
+    try {
+      ffmpeg.FS(
+        "unlink",
+        inputName
+      );
+    } catch {}
+
+    try {
+      ffmpeg.FS(
+        "unlink",
+        outputName
+      );
+    } catch {}
+
+
+  } catch (err) {
+
+    console.error(err);
+
+    errorBox.textContent =
+      "Compression failed";
+
+    errorBox.style.display =
+      "block";
+
   }
 
-  :root{
-    --red:#e50920;
-    --red2:#ff1830;
-    --white:#fff;
-    --muted:#a9a9a9;
-    --black:#070707;
-    --card:#101010;
-    --line:#292929;
-  }
+  compressBtn.disabled =
+    false;
+};
 
-  body{
-    font-family:Arial,Helvetica,sans-serif;
-    background:#070707;
-    color:white;
-    min-height:100vh;
-    overflow-x:hidden;
-  }
+</script>
 
-  /* GALAXY BACKGROUND */
-  .galaxy{
-    position:fixed;
-    inset:0;
-    overflow:hidden;
-    pointer-events:none;
-    z-index:-1;
-    background:
-      radial-gradient(circle at 20% 20%,rgba(229,9,32,.12),transparent 28%),
-      radial-gradient(circle at 80% 70%,rgba(255,30,50,.08),transparent 30%),
-      #070707;
-  }
-
-  .galaxy::before,
-  .galaxy::after{
-    content:"";
-    position:absolute;
-    width:500px;
-    height:500px;
-    border-radius:50%;
-    left:50%;
-    top:45%;
-    transform:translate(-50%,-50%);
-    border:1px solid rgba(255,255,255,.08);
-    box-shadow:
-      0 0 80px rgba(229,9,32,.12),
-      inset 0 0 80px rgba(229,9,32,.06);
-    animation:spin 30s linear infinite;
-  }
-
-  .galaxy::after{
-    width:800px;
-    height:250px;
-    transform:translate(-50%,-50%) rotate(-25deg);
-    animation:spin2 45s linear infinite;
-  }
-
-  @keyframes spin{
-    to{transform:translate(-50%,-50%) rotate(360deg)}
-  }
-
-  @keyframes spin2{
-    to{transform:translate(-50%,-50%) rotate(335deg)}
-  }
-
-  .stars{
-    position:absolute;
-    inset:0;
-    background-image:
-      radial-gradient(circle,#fff 1px,transparent 1.5px),
-      radial-gradient(circle,#e50920 1px,transparent 1.5px);
-    background-size:110px 110px,170px 170px;
-    background-position:10px 20px,50px 80px;
-    opacity:.18;
-    animation:stars 25s linear infinite;
-  }
-
-  @keyframes stars{
-    from{transform:translateY(0)}
-    to{transform:translateY(-110px)}
-  }
-
-  /* HEADER */
-  header{
-    width:min(1100px,92%);
-    margin:auto;
-    padding:25px 0 15px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-  }
-
-  .logo{
-    display:flex;
-    align-items:center;
+</body>
+</html>    align-items:center;
     gap:12px;
     font-size:25px;
     font-weight:900;
