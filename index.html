@@ -2,112 +2,870 @@
 <html lang="en">
 <head>
   <script src="coi-serviceworker.js"></script>
-
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>NEON BASE</title>
+  <title>NEON BASE — Video Compressor</title>
 
   <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
 
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+  *{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+  }
+
+  :root{
+    --red:#e50920;
+    --red2:#ff1830;
+    --white:#fff;
+    --muted:#a9a9a9;
+    --black:#070707;
+    --card:#101010;
+    --line:#292929;
+  }
+
+  body{
+    font-family:Arial,Helvetica,sans-serif;
+    background:#070707;
+    color:white;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+
+  /* GALAXY BACKGROUND */
+  .galaxy{
+    position:fixed;
+    inset:0;
+    overflow:hidden;
+    pointer-events:none;
+    z-index:-1;
+    background:
+      radial-gradient(circle at 20% 20%,rgba(229,9,32,.12),transparent 28%),
+      radial-gradient(circle at 80% 70%,rgba(255,30,50,.08),transparent 30%),
+      #070707;
+  }
+
+  .galaxy::before,
+  .galaxy::after{
+    content:"";
+    position:absolute;
+    width:500px;
+    height:500px;
+    border-radius:50%;
+    left:50%;
+    top:45%;
+    transform:translate(-50%,-50%);
+    border:1px solid rgba(255,255,255,.08);
+    box-shadow:
+      0 0 80px rgba(229,9,32,.12),
+      inset 0 0 80px rgba(229,9,32,.06);
+    animation:spin 30s linear infinite;
+  }
+
+  .galaxy::after{
+    width:800px;
+    height:250px;
+    transform:translate(-50%,-50%) rotate(-25deg);
+    animation:spin2 45s linear infinite;
+  }
+
+  @keyframes spin{
+    to{transform:translate(-50%,-50%) rotate(360deg)}
+  }
+
+  @keyframes spin2{
+    to{transform:translate(-50%,-50%) rotate(335deg)}
+  }
+
+  .stars{
+    position:absolute;
+    inset:0;
+    background-image:
+      radial-gradient(circle,#fff 1px,transparent 1.5px),
+      radial-gradient(circle,#e50920 1px,transparent 1.5px);
+    background-size:110px 110px,170px 170px;
+    background-position:10px 20px,50px 80px;
+    opacity:.18;
+    animation:stars 25s linear infinite;
+  }
+
+  @keyframes stars{
+    from{transform:translateY(0)}
+    to{transform:translateY(-110px)}
+  }
+
+  /* HEADER */
+  header{
+    width:min(1100px,92%);
+    margin:auto;
+    padding:25px 0 15px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+
+  .logo{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    font-size:25px;
+    font-weight:900;
+    letter-spacing:-1px;
+  }
+
+  .logo-mark{
+    width:42px;
+    height:42px;
+    border:2px solid var(--red);
+    border-radius:50%;
+    position:relative;
+    box-shadow:0 0 20px rgba(229,9,32,.4);
+  }
+
+  .logo-mark::before{
+    content:"";
+    position:absolute;
+    width:55px;
+    height:18px;
+    border:1px solid var(--red);
+    border-radius:50%;
+    top:10px;
+    left:-9px;
+    transform:rotate(-25deg);
+  }
+
+  .logo-mark::after{
+    content:"";
+    position:absolute;
+    width:10px;
+    height:10px;
+    background:var(--red);
+    border-radius:50%;
+    left:15px;
+    top:15px;
+  }
+
+  .logo span{
+    color:var(--red);
+  }
+
+  .status{
+    font-size:12px;
+    color:#bbb;
+  }
+
+  .status b{
+    color:#48e88a;
+  }
+
+  /* MAIN LAYOUT */
+  main{
+    width:min(900px,92%);
+    margin:35px auto 80px;
+  }
+
+  .hero{
+    text-align:center;
+    margin-bottom:35px;
+  }
+
+  .badge{
+    display:inline-block;
+    color:var(--red2);
+    font-size:11px;
+    font-weight:bold;
+    letter-spacing:3px;
+    margin-bottom:15px;
+  }
+
+  h1{
+    font-size:clamp(42px,8vw,76px);
+    line-height:.95;
+    letter-spacing:-4px;
+    font-weight:900;
+  }
+
+  h1 span{
+    color:var(--red);
+  }
+
+  .subtitle{
+    color:#999;
+    margin-top:18px;
+    font-size:17px;
+  }
+
+  /* STEPS indicator */
+  .steps{
+    display:flex;
+    justify-content:center;
+    gap:35px;
+    margin:30px 0;
+    color:#555;
+    font-size:12px;
+    font-weight:bold;
+  }
+
+  .steps .active{
+    color:white;
+  }
+
+  /* CARD */
+  .card{
+    background:rgba(15,15,15,.92);
+    border:1px solid var(--line);
+    border-radius:24px;
+    padding:30px;
+    box-shadow:0 25px 80px rgba(0,0,0,.5);
+  }
+
+  .upload{
+    border:2px dashed #4b4b4b;
+    border-radius:20px;
+    min-height:310px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    cursor:pointer;
+    transition:.25s;
+  }
+
+  .upload:hover,
+  .upload.drag{
+    border-color:var(--red);
+    background:rgba(229,9,32,.04);
+  }
+
+  .upload-icon{
+    width:80px;
+    height:80px;
+    background:var(--red);
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin:0 auto 25px;
+    font-size:36px;
+    box-shadow:0 0 35px rgba(229,9,32,.25);
+  }
+
+  .upload h2{
+    font-size:25px;
+    margin-bottom:10px;
+  }
+
+  .upload p{
+    color:#888;
+    margin-bottom:25px;
+  }
+
+  .btn{
+    border:0;
+    border-radius:12px;
+    padding:16px 28px;
+    background:var(--red);
+    color:white;
+    font-size:15px;
+    font-weight:800;
+    cursor:pointer;
+    text-decoration:none;
+    display:inline-block;
+    transition: 0.2s;
+  }
+
+  .btn:hover{
+    background:var(--red2);
+  }
+
+  input[type=file]{
+    display:none;
+  }
+
+  /* FILE BOX */
+  .file-box{
+    display:none;
+    margin-top:20px;
+    padding:18px;
+    border:1px solid var(--line);
+    border-radius:15px;
+    background:#0b0b0b;
+  }
+
+  .file-name{
+    font-weight:bold;
+    word-break:break-all;
+  }
+
+  .file-size{
+    color:#777;
+    font-size:12px;
+    margin-top:6px;
+  }
+
+  /* OPTIONS */
+  .options{
+    display:none;
+    margin-top:20px;
+  }
+
+  .option-title{
+    font-size:12px;
+    color:#999;
+    margin-bottom:10px;
+  }
+
+  .quality{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+  }
+
+  .quality button{
+    background:#111;
+    border:1px solid #333;
+    color:white;
+    padding:14px;
+    border-radius:10px;
+    cursor:pointer;
+    transition: 0.2s;
+  }
+
+  .quality button:hover{
+    border-color:#555;
+  }
+
+  .quality button.active{
+    border-color:var(--red);
+    background:rgba(229,9,32,.1);
+  }
+
+  .start{
+    width:100%;
+    margin-top:20px;
+  }
+
+  /* PROCESSING */
+  .processing{
+    display:none;
+    text-align:center;
+    padding:55px 20px;
+  }
+
+  .loader{
+    width:70px;
+    height:70px;
+    border:4px solid #333;
+    border-top-color:var(--red);
+    border-radius:50%;
+    margin:auto;
+    animation:load 1s linear infinite;
+  }
+
+  @keyframes load{
+    to{transform:rotate(360deg)}
+  }
+
+  .progress{
+    width:100%;
+    height:8px;
+    background:#292929;
+    border-radius:20px;
+    margin:30px 0 12px;
+    overflow:hidden;
+  }
+
+  .progress-bar{
+    width:0%;
+    height:100%;
+    background:var(--red);
+    transition:.3s;
+  }
+
+  .percent{
+    color:var(--red);
+    font-weight:bold;
+  }
+
+  /* RESULT */
+  .result{
+    display:none;
+    text-align:center;
+  }
+
+  .check{
+    width:80px;
+    height:80px;
+    border-radius:50%;
+    background:var(--red);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin:0 auto 25px;
+    font-size:38px;
+    box-shadow:0 0 40px rgba(229,9,32,.25);
+  }
+
+  .result h2{
+    font-size:34px;
+    margin-bottom:10px;
+  }
+
+  .result p{
+    color:#888;
+  }
+
+  .size-comparison {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 20px 0;
+    font-size: 14px;
+  }
+
+  .size-comparison div {
+    background: #0b0b0b;
+    padding: 12px 20px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+  }
+
+  .size-comparison span {
+    color: var(--red);
+    font-weight: bold;
+    display: block;
+    font-size: 18px;
+    margin-top: 4px;
+  }
+
+  .notice{
+    margin:28px auto;
+    max-width:600px;
+    text-align:left;
+    padding:22px;
+    border:1px solid #333;
+    border-left:3px solid var(--red);
+    border-radius:14px;
+    background:#0b0b0b;
+  }
+
+  .notice-title{
+    color:var(--red);
+    font-size:11px;
+    font-weight:bold;
+    letter-spacing:2px;
+    margin-bottom:10px;
+  }
+
+  .notice p{
+    color:#bbb;
+    line-height:1.7;
+  }
+
+  .hashtags{
+    color:white !important;
+    font-weight:bold;
+  }
+
+  .download{
+    width:100%;
+    max-width:500px;
+    font-size:17px;
+  }
+
+  .reset{
+    display:block;
+    margin:18px auto;
+    background:transparent;
+    border:1px solid #333;
+    color:#aaa;
+  }
+
+  /* FOOTER */
+  footer{
+    text-align:center;
+    color:#666;
+    font-size:12px;
+    padding:30px;
+  }
+
+  footer b{
+    color:var(--red);
+  }
+
+  @media(max-width:600px){
+    header{ padding-top:18px; }
+    .logo{ font-size:20px; }
+    .logo-mark{ width:34px; height:34px; }
+    .status{ display:none; }
+    h1{ letter-spacing:-2px; }
+    .card{ padding:15px; border-radius:18px; }
+    .quality{ grid-template-columns:1fr; }
+    .steps{ gap:15px; }
+  }
+  </style>
+</head>
+
+<body>
+
+<div class="galaxy">
+  <div class="stars"></div>
+</div>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark"></div>
+    NEON <span>BASE</span>
+  </div>
+
+  <div class="status">
+    ● <b>LOCAL PROCESSING</b>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="badge">NEON BASE VIDEO ENGINE</div>
+    <h1>Compress your <span>video.</span></h1>
+    <div class="subtitle">High quality. Small file size. Your video stays on your device.</div>
+  </section>
+
+  <div class="steps">
+    <div id="step1" class="active">01 VIDEO</div>
+    <div id="step2">02 PROCESS</div>
+    <div id="step3">03 DOWNLOAD</div>
+  </div>
+
+  <div class="card">
+    <!-- UPLOAD AREA -->
+    <div id="uploadArea" class="upload">
+      <div>
+        <div class="upload-icon">↑</div>
+        <h2>Choose your video</h2>
+        <p>Select a video or drag and drop it here.</p>
+        <button type="button" class="btn" id="selectVideoBtn">Select video</button>
+      </div>
+    </div>
+
+    <input id="fileInput" type="file" accept="video/*">
+
+    <div id="fileBox" class="file-box">
+      <div id="fileName" class="file-name"></div>
+      <div id="fileSize" class="file-size"></div>
+    </div>
+
+    <!-- OPTIONS -->
+    <div id="options" class="options">
+      <div class="option-title">COMPRESSION LEVEL</div>
+      <div class="quality">
+        <button type="button" data-quality="high">
+          HIGH QUALITY<br><small style="color:#777;">(Light Compression)</small>
+        </button>
+        <button type="button" data-quality="balanced" class="active">
+          BALANCED<br><small style="color:#777;">(Recommended)</small>
+        </button>
+        <button type="button" data-quality="small">
+          SMALL FILE<br><small style="color:#777;">(Max Compression)</small>
+        </button>
+      </div>
+
+      <button type="button" id="startBtn" class="btn start">Start processing</button>
+    </div>
+
+    <!-- PROCESSING -->
+    <div id="processing" class="processing">
+      <div class="loader"></div>
+      <h2 style="margin-top:25px">Compressing your video</h2>
+      <p style="color:#777;margin-top:10px">Please keep this page open.</p>
+
+      <div class="progress">
+        <div id="progressBar" class="progress-bar"></div>
+      </div>
+      <div id="percent" class="percent">0%</div>
+    </div>
+
+    <!-- RESULT -->
+    <div id="result" class="result">
+      <div class="check">✓</div>
+      <h2>Your video is ready</h2>
+      <p>Compression completed successfully.</p>
+
+      <div class="size-comparison">
+        <div>Original Size <span id="originalSizeText">0 MB</span></div>
+        <div>Compressed Size <span id="compressedSizeText">0 MB</span></div>
+      </div>
+
+      <div class="notice">
+        <div class="notice-title">QUICK REMINDER</div>
+        <p>Your video was compressed locally in your browser and never uploaded to any external server.</p>
+        <p class="hashtags" style="margin-top:12px">
+          Support NEON BASE<br>
+          #neonbase #neonbasemethod
+        </p>
+      </div>
+
+      <a id="downloadBtn" class="btn download" download="Neon_base_compressed.mp4">Download video</a>
+      <button type="button" id="resetBtn" class="btn reset">Process another video</button>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <b>NEON BASE</b> · Your video stays on your device.
+</footer>
+
+<script>
+/* =========================
+   ELEMENTS
+========================= */
+const fileInput = document.getElementById("fileInput");
+const selectVideoBtn = document.getElementById("selectVideoBtn");
+const uploadArea = document.getElementById("uploadArea");
+const fileBox = document.getElementById("fileBox");
+const fileName = document.getElementById("fileName");
+const fileSize = document.getElementById("fileSize");
+const options = document.getElementById("options");
+const processing = document.getElementById("processing");
+const result = document.getElementById("result");
+const startBtn = document.getElementById("startBtn");
+const progressBar = document.getElementById("progressBar");
+const percent = document.getElementById("percent");
+const downloadBtn = document.getElementById("downloadBtn");
+const resetBtn = document.getElementById("resetBtn");
+const originalSizeText = document.getElementById("originalSizeText");
+const compressedSizeText = document.getElementById("compressedSizeText");
+
+const step1 = document.getElementById("step1");
+const step2 = document.getElementById("step2");
+const step3 = document.getElementById("step3");
+
+/* =========================
+   STATE
+========================= */
+let selectedFile = null;
+let selectedQuality = "balanced";
+let ffmpeg = null;
+let outputUrl = null;
+
+/* =========================
+   FILE SELECT & DRAG DROP
+========================= */
+selectVideoBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  fileInput.click();
+});
+
+uploadArea.addEventListener("click", () => fileInput.click());
+
+fileInput.addEventListener("change", e => {
+  const file = e.target.files && e.target.files[0];
+  if (file) selectFile(file);
+});
+
+uploadArea.addEventListener("dragover", e => {
+  e.preventDefault();
+  uploadArea.classList.add("drag");
+});
+
+uploadArea.addEventListener("dragleave", () => uploadArea.classList.remove("drag"));
+
+uploadArea.addEventListener("drop", e => {
+  e.preventDefault();
+  uploadArea.classList.remove("drag");
+  const file = e.dataTransfer.files && e.dataTransfer.files[0];
+  if (file) selectFile(file);
+});
+
+function selectFile(file) {
+  if (!file.type.startsWith("video/")) {
+    alert("Please select a video file.");
+    return;
+  }
+  selectedFile = file;
+  fileName.textContent = file.name;
+  fileSize.textContent = formatBytes(file.size);
+  fileBox.style.display = "block";
+  options.style.display = "block";
+  uploadArea.style.minHeight = "180px";
+}
+
+/* =========================
+   QUALITY SELECTOR
+========================= */
+document.querySelectorAll(".quality button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".quality button").forEach(x => x.classList.remove("active"));
+    btn.classList.add("active");
+    selectedQuality = btn.dataset.quality;
+  });
+});
+
+/* =========================
+   LOAD FFMPEG ENGINE
+========================= */
+async function loadFFmpeg() {
+  if (ffmpeg && ffmpeg.isLoaded()) return ffmpeg;
+
+  const { createFFmpeg } = FFmpeg;
+  ffmpeg = createFFmpeg({ log: false });
+
+  // Real progress tracking
+  ffmpeg.setProgress(({ ratio }) => {
+    const pct = Math.floor(ratio * 100);
+    if (pct >= 0 && pct <= 100) {
+      progressBar.style.width = pct + "%";
+      percent.textContent = pct + "%";
+    }
+  });
+
+  await ffmpeg.load();
+  return ffmpeg;
+}
+
+/* =========================
+   PROCESS VIDEO (COMPRESSION)
+========================= */
+startBtn.addEventListener("click", async () => {
+  if (!selectedFile) return;
+
+  // UI state updates
+  uploadArea.style.display = "none";
+  fileBox.style.display = "none";
+  options.style.display = "none";
+  processing.style.display = "block";
+  
+  step1.classList.remove("active");
+  step2.classList.add("active");
+
+  progressBar.style.width = "0%";
+  percent.textContent = "0%";
+
+  try {
+    const engine = await loadFFmpeg();
+
+    const inputName = "input.mp4";
+    const outputName = "compressed_output.mp4";
+
+    engine.FS("writeFile", inputName, await FFmpeg.fetchFile(selectedFile));
+
+    // Dynamic compression parameters based on selection
+    let args = ['-i', inputName];
+
+    if (selectedQuality === "high") {
+      // Light Compression: CRF 24, Mantain Resolution, Moderate Preset
+      args.push(
+        '-c:v', 'libx264',
+        '-crf', '24',
+        '-preset', 'fast',
+        '-c:a', 'aac',
+        '-b:a', '128k'
+      );
+    } else if (selectedQuality === "balanced") {
+      // Balanced Compression: CRF 28, Scale max 1080p, AAC Audio
+      args.push(
+        '-vf', 'scale=\'min(1080,iw)\':-2',
+        '-c:v', 'libx264',
+        '-crf', '28',
+        '-preset', 'faster',
+        '-c:a', 'aac',
+        '-b:a', '96k'
+      );
+    } else if (selectedQuality === "small") {
+      // Max Compression: CRF 32, Downscale to 720p, Lower Bitrate
+      args.push(
+        '-vf', 'scale=\'min(720,iw)\':-2',
+        '-c:v', 'libx264',
+        '-crf', '32',
+        '-preset', 'veryfast',
+        '-c:a', 'aac',
+        '-b:a', '64k'
+      );
     }
 
-    body {
-      min-height: 100vh;
-      font-family: Arial, sans-serif;
-      color: white;
-      background:
-        radial-gradient(circle at 20% 20%, rgba(255,0,40,.18), transparent 30%),
-        radial-gradient(circle at 80% 80%, rgba(255,0,40,.12), transparent 30%),
-        #050505;
-      display: flex;
-      justify-content: center;
-      padding: 25px 15px;
-    }
+    args.push('-movflags', '+faststart', outputName);
 
-    .app {
-      width: 100%;
-      max-width: 650px;
-    }
+    // Run FFmpeg Process
+    await engine.run(...args);
 
-    .header {
-      text-align: center;
-      margin-bottom: 25px;
-    }
+    const data = engine.FS("readFile", outputName);
+    const blob = new Blob([data.buffer], { type: "video/mp4" });
 
-    .logo {
-      font-size: 32px;
-      font-weight: 900;
-      letter-spacing: 5px;
-    }
+    if (outputUrl) URL.revokeObjectURL(outputUrl);
+    outputUrl = URL.createObjectURL(blob);
 
-    .subtitle {
-      margin-top: 8px;
-      color: #aaa;
-      font-size: 13px;
-      letter-spacing: 2px;
-    }
+    downloadBtn.href = outputUrl;
+    downloadBtn.download = `NeonBase_${selectedQuality}_${selectedFile.name}`;
 
-    .card {
-      background: rgba(255,255,255,.055);
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 24px;
-      padding: 20px;
-      backdrop-filter: blur(20px);
-      box-shadow: 0 20px 60px rgba(0,0,0,.4);
-      margin-bottom: 15px;
-    }
+    // Display comparison
+    originalSizeText.textContent = formatBytes(selectedFile.size);
+    compressedSizeText.textContent = formatBytes(blob.size);
 
-    .upload {
-      border: 2px dashed rgba(255,255,255,.2);
-      border-radius: 20px;
-      padding: 45px 20px;
-      text-align: center;
-      cursor: pointer;
-      transition: .2s;
-    }
+    // Finish State
+    setTimeout(() => {
+      processing.style.display = "none";
+      result.style.display = "block";
 
-    .upload:hover,
-    .upload.drag {
-      border-color: #ff1830;
-      background: rgba(255,24,48,.06);
-    }
+      step2.classList.remove("active");
+      step3.classList.add("active");
+    }, 500);
 
-    .upload-icon {
-      font-size: 42px;
-      margin-bottom: 12px;
-    }
+  } catch (error) {
+    console.error("NEON BASE FFMPEG ERROR:", error);
 
-    .upload-title {
-      font-size: 18px;
-      font-weight: 700;
-    }
+    processing.style.display = "none";
+    uploadArea.style.display = "flex";
+    uploadArea.style.minHeight = "310px";
+    fileBox.style.display = "block";
+    options.style.display = "block";
 
-    .upload-sub {
-      color: #888;
-      font-size: 13px;
-      margin-top: 8px;
-    }
+    step2.classList.remove("active");
+    step1.classList.add("active");
 
-    #fileInput {
-      display: none;
-    }
+    alert("Video compression failed. Please try a different video format.");
+  }
+});
 
-    .file-name {
-      margin-top: 15px;
-      padding: 12px;
-      background: rgba(255,255,255,.06);
-      border-radius: 12px;
-      font-size: 13px;
-      color: #ddd;
-      word-break: break-all;
-      display: none;
-    }
+/* =========================
+   RESET STATE
+========================= */
+resetBtn.addEventListener("click", () => {
+  selectedFile = null;
+  fileInput.value = "";
+
+  if (outputUrl) {
+    URL.revokeObjectURL(outputUrl);
+    outputUrl = null;
+  }
+
+  result.style.display = "none";
+  processing.style.display = "none";
+  uploadArea.style.display = "flex";
+  uploadArea.style.minHeight = "310px";
+  options.style.display = "none";
+  fileBox.style.display = "none";
+
+  progressBar.style.width = "0%";
+  percent.textContent = "0%";
+
+  step3.classList.remove("active");
+  step1.classList.add("active");
+});
+
+/* =========================
+   HELPER FUNCTIONS
+========================= */
+function formatBytes(bytes) {
+  if (bytes === 0) return "0 Bytes";
+  const sizes = ["Bytes", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return parseFloat((bytes / Math.pow(1024, i)).toFixed(2)) + " " + sizes[i];
+}
+</script>
+
+</body>
+</html>
 
     .section-title {
       font-size: 12px;
