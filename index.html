@@ -1,114 +1,1860 @@
 <!DOCTYPE html>
-<html lang="my">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TikTok HD Video Optimizer</title>
-  
-  <!-- GitHub Pages တွင် SharedArrayBuffer / FFmpeg.wasm အလုပ်လုပ်စေရန် COOP/COEP Header Injector -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/coi-serviceworker/0.1.7/coi-serviceworker.min.js"></script>
 
-  <!-- FFmpeg.wasm v0.11.6 CDN -->
-  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: #0f172a;
-      color: #f8fafc;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-    .container {
-      background: #1e293b;
-      width: 100%;
-      max-width: 480px;
-      padding: 30px 24px;
-      border-radius: 16px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-      text-align: center;
-    }
-    h1 {
-      font-size: 22px;
-      margin-bottom: 8px;
-      color: #00f2fe;
-    }
-    p.subtitle {
-      font-size: 13px;
-      color: #94a3b8;
-      margin-bottom: 24px;
-    }
-    .upload-area {
-      border: 2px dashed #334155;
-      padding: 30px 16px;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: 0.2s;
-      background: #0f172a;
-    }
-    .upload-area:hover {
-      border-color: #00f2fe;
-    }
-    input[type="file"] { display: none; }
-    .btn {
-      background: linear-gradient(135deg, #00f2fe, #4facfe);
-      color: #000;
-      font-weight: bold;
-      padding: 12px 24px;
-      border-radius: 8px;
-      display: inline-block;
-      margin-top: 10px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    .progress-box {
-      margin-top: 24px;
-      display: none;
-    }
-    .progress-bar-bg {
-      background: #334155;
-      height: 10px;
-      border-radius: 5px;
-      overflow: hidden;
-      margin-top: 8px;
-    }
-    .progress-bar-fill {
-      background: #22c55e;
-      height: 100%;
-      width: 0%;
-      transition: width 0.3s ease;
-    }
-    #status {
-      font-size: 13px;
-      color: #cbd5e1;
-      margin-top: 10px;
-      word-break: break-word;
-    }
-    .dl-btn {
-      display: none;
-      background: #22c55e;
-      color: #fff;
-      text-decoration: none;
-      font-weight: bold;
-      padding: 14px 28px;
-      border-radius: 8px;
-      margin-top: 20px;
-      font-size: 15px;
-      width: 100%;
-      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
-    }
-  </style>
+<title>NEON QUALITY — Video Quality</title>
+
+<style>
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
+:root{
+  --red:#e50920;
+  --red2:#ff1830;
+  --white:#fff;
+  --black:#070707;
+  --line:#292929;
+}
+
+body{
+  font-family:Arial,Helvetica,sans-serif;
+  background:#070707;
+  color:white;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* GALAXY */
+
+.galaxy{
+  position:fixed;
+  inset:0;
+  overflow:hidden;
+  pointer-events:none;
+  z-index:-1;
+
+  background:
+    radial-gradient(
+      circle at 20% 20%,
+      rgba(229,9,32,.12),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 80% 70%,
+      rgba(255,30,50,.08),
+      transparent 30%
+    ),
+    #070707;
+}
+
+.galaxy::before,
+.galaxy::after{
+  content:"";
+  position:absolute;
+  width:500px;
+  height:500px;
+  border-radius:50%;
+  left:50%;
+  top:45%;
+  transform:translate(-50%,-50%);
+  border:1px solid rgba(255,255,255,.08);
+
+  box-shadow:
+    0 0 80px rgba(229,9,32,.12),
+    inset 0 0 80px rgba(229,9,32,.06);
+
+  animation:spin 30s linear infinite;
+}
+
+.galaxy::after{
+  width:800px;
+  height:250px;
+
+  transform:
+    translate(-50%,-50%)
+    rotate(-25deg);
+
+  animation:spin2 45s linear infinite;
+}
+
+@keyframes spin{
+  to{
+    transform:
+      translate(-50%,-50%)
+      rotate(360deg);
+  }
+}
+
+@keyframes spin2{
+  to{
+    transform:
+      translate(-50%,-50%)
+      rotate(335deg);
+  }
+}
+
+.stars{
+  position:absolute;
+  inset:0;
+
+  background-image:
+    radial-gradient(
+      circle,
+      #fff 1px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle,
+      #e50920 1px,
+      transparent 1.5px
+    );
+
+  background-size:
+    110px 110px,
+    170px 170px;
+
+  background-position:
+    10px 20px,
+    50px 80px;
+
+  opacity:.18;
+
+  animation:
+    stars 25s linear infinite;
+}
+
+@keyframes stars{
+  from{
+    transform:translateY(0);
+  }
+
+  to{
+    transform:translateY(-110px);
+  }
+}
+
+/* HEADER */
+
+header{
+  width:min(1100px,92%);
+  margin:auto;
+  padding:25px 0 15px;
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.logo{
+  display:flex;
+  align-items:center;
+  gap:12px;
+
+  font-size:25px;
+  font-weight:900;
+  letter-spacing:-1px;
+}
+
+.logo-mark{
+  width:42px;
+  height:42px;
+
+  border:2px solid var(--red);
+  border-radius:50%;
+
+  position:relative;
+
+  box-shadow:
+    0 0 20px rgba(229,9,32,.4);
+}
+
+.logo-mark::before{
+  content:"";
+
+  position:absolute;
+
+  width:55px;
+  height:18px;
+
+  border:1px solid var(--red);
+  border-radius:50%;
+
+  top:10px;
+  left:-9px;
+
+  transform:rotate(-25deg);
+}
+
+.logo-mark::after{
+  content:"";
+
+  position:absolute;
+
+  width:10px;
+  height:10px;
+
+  background:var(--red);
+  border-radius:50%;
+
+  left:15px;
+  top:15px;
+}
+
+.logo span{
+  color:var(--red);
+}
+
+.status{
+  font-size:12px;
+  color:#bbb;
+}
+
+.status b{
+  color:#48e88a;
+}
+
+/* MAIN */
+
+main{
+  width:min(900px,92%);
+  margin:35px auto 80px;
+}
+
+.hero{
+  text-align:center;
+  margin-bottom:35px;
+}
+
+.badge{
+  display:inline-block;
+
+  color:var(--red2);
+
+  font-size:11px;
+  font-weight:bold;
+
+  letter-spacing:3px;
+
+  margin-bottom:15px;
+}
+
+h1{
+  font-size:clamp(42px,8vw,76px);
+
+  line-height:.95;
+
+  letter-spacing:-4px;
+
+  font-weight:900;
+}
+
+h1 span{
+  color:var(--red);
+}
+
+.subtitle{
+  color:#999;
+
+  margin-top:18px;
+
+  font-size:17px;
+}
+
+/* STEPS */
+
+.steps{
+  display:flex;
+  justify-content:center;
+
+  gap:35px;
+
+  margin:30px 0;
+
+  color:#555;
+
+  font-size:12px;
+  font-weight:bold;
+}
+
+.steps .active{
+  color:white;
+}
+
+/* CARD */
+
+.card{
+  background:rgba(15,15,15,.92);
+
+  border:1px solid var(--line);
+
+  border-radius:24px;
+
+  padding:30px;
+
+  box-shadow:
+    0 25px 80px rgba(0,0,0,.5);
+}
+
+/* UPLOAD */
+
+.upload{
+  border:2px dashed #4b4b4b;
+
+  border-radius:20px;
+
+  min-height:310px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  text-align:center;
+
+  cursor:pointer;
+
+  transition:.25s;
+}
+
+.upload:hover,
+.upload.drag{
+  border-color:var(--red);
+
+  background:
+    rgba(229,9,32,.04);
+}
+
+.upload-icon{
+  width:80px;
+  height:80px;
+
+  background:var(--red);
+
+  border-radius:50%;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  margin:0 auto 25px;
+
+  font-size:36px;
+
+  box-shadow:
+    0 0 35px rgba(229,9,32,.25);
+}
+
+.upload h2{
+  font-size:25px;
+
+  margin-bottom:10px;
+}
+
+.upload p{
+  color:#888;
+
+  margin-bottom:25px;
+}
+
+.btn{
+  border:0;
+
+  border-radius:12px;
+
+  padding:16px 28px;
+
+  background:var(--red);
+
+  color:white;
+
+  font-size:15px;
+
+  font-weight:800;
+
+  cursor:pointer;
+
+  text-decoration:none;
+
+  display:inline-block;
+}
+
+.btn:hover{
+  background:var(--red2);
+}
+
+.btn:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
+
+input[type=file]{
+  display:none;
+}
+
+/* FILE */
+
+.file-box{
+  display:none;
+
+  margin-top:20px;
+
+  padding:18px;
+
+  border:1px solid var(--line);
+
+  border-radius:15px;
+
+  background:#0b0b0b;
+}
+
+.file-name{
+  font-weight:bold;
+
+  word-break:break-all;
+}
+
+.file-size{
+  color:#777;
+
+  font-size:12px;
+
+  margin-top:6px;
+}
+
+/* SOURCE INFO */
+
+.source-info{
+  display:none;
+
+  margin-top:10px;
+
+  padding:12px 15px;
+
+  border-radius:12px;
+
+  background:#0b0b0b;
+
+  border:1px solid #252525;
+
+  color:#888;
+
+  font-size:12px;
+
+  line-height:1.7;
+}
+
+.source-info b{
+  color:#ddd;
+}
+
+/* OPTIONS */
+
+.options{
+  display:none;
+
+  margin-top:20px;
+}
+
+.quality-card{
+  padding:18px;
+
+  border:1px solid var(--red);
+
+  border-radius:14px;
+
+  background:
+    rgba(229,9,32,.07);
+}
+
+.quality-title{
+  font-size:14px;
+  font-weight:900;
+}
+
+.quality-description{
+  color:#888;
+  font-size:12px;
+  margin-top:6px;
+  line-height:1.6;
+}
+
+.start{
+  width:100%;
+  margin-top:20px;
+}
+
+/* PROCESS */
+
+.processing{
+  display:none;
+
+  text-align:center;
+
+  padding:55px 20px;
+}
+
+.loader{
+  width:70px;
+  height:70px;
+
+  border:4px solid #333;
+
+  border-top-color:var(--red);
+
+  border-radius:50%;
+
+  margin:auto;
+
+  animation:
+    load 1s linear infinite;
+}
+
+@keyframes load{
+  to{
+    transform:rotate(360deg);
+  }
+}
+
+.progress{
+  width:100%;
+
+  height:8px;
+
+  background:#292929;
+
+  border-radius:20px;
+
+  margin:30px 0 12px;
+
+  overflow:hidden;
+}
+
+.progress-bar{
+  width:0%;
+
+  height:100%;
+
+  background:var(--red);
+
+  transition:.3s;
+}
+
+.percent{
+  color:var(--red);
+
+  font-weight:bold;
+}
+
+.process-status{
+  color:#777;
+
+  font-size:12px;
+
+  margin-top:8px;
+}
+
+/* RESULT */
+
+.result{
+  display:none;
+
+  text-align:center;
+}
+
+.check{
+  width:80px;
+  height:80px;
+
+  border-radius:50%;
+
+  background:var(--red);
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  margin:0 auto 25px;
+
+  font-size:38px;
+
+  box-shadow:
+    0 0 40px rgba(229,9,32,.25);
+}
+
+.result h2{
+  font-size:34px;
+
+  margin-bottom:10px;
+}
+
+.result p{
+  color:#888;
+}
+
+.result-info{
+  margin:20px auto;
+
+  max-width:500px;
+
+  display:grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap:10px;
+}
+
+.result-stat{
+  padding:14px;
+
+  background:#0b0b0b;
+
+  border:1px solid #292929;
+
+  border-radius:12px;
+}
+
+.result-stat span{
+  display:block;
+
+  color:#666;
+
+  font-size:10px;
+
+  text-transform:uppercase;
+
+  margin-bottom:5px;
+}
+
+.result-stat b{
+  font-size:14px;
+}
+
+.notice{
+  margin:28px auto;
+
+  max-width:600px;
+
+  text-align:left;
+
+  padding:22px;
+
+  border:1px solid #333;
+
+  border-left:3px solid var(--red);
+
+  border-radius:14px;
+
+  background:#0b0b0b;
+}
+
+.notice-title{
+  color:var(--red);
+
+  font-size:11px;
+
+  font-weight:bold;
+
+  letter-spacing:2px;
+
+  margin-bottom:10px;
+}
+
+.notice p{
+  color:#bbb;
+
+  line-height:1.7;
+}
+
+.download{
+  width:100%;
+
+  max-width:500px;
+
+  font-size:17px;
+}
+
+.reset{
+  display:block;
+
+  margin:18px auto;
+
+  background:transparent;
+
+  border:1px solid #333;
+
+  color:#aaa;
+}
+
+/* FOOTER */
+
+footer{
+  text-align:center;
+
+  color:#666;
+
+  font-size:12px;
+
+  padding:30px;
+}
+
+footer b{
+  color:var(--red);
+}
+
+/* MOBILE */
+
+@media(max-width:600px){
+
+  header{
+    padding-top:18px;
+  }
+
+  .logo{
+    font-size:20px;
+  }
+
+  .logo-mark{
+    width:34px;
+    height:34px;
+  }
+
+  .status{
+    display:none;
+  }
+
+  h1{
+    letter-spacing:-2px;
+  }
+
+  .card{
+    padding:15px;
+
+    border-radius:18px;
+  }
+
+  .steps{
+    gap:15px;
+  }
+
+  .result-info{
+    grid-template-columns:1fr;
+  }
+
+}
+
+</style>
+
 </head>
+
 <body>
 
-  <div class="container">
-    <h1>TikTok HD Optimizer</h1>
-    <p class="subtitle">ဗီဒီယို မဝါးဘဲ ကြည်လင်သွားစေသည့် Sharpening & 60FPS Presets</p>
+<div class="galaxy">
+  <div class="stars"></div>
+</div>
 
+<header>
+
+  <div class="logo">
+
+    <div class="logo-mark"></div>
+
+    NEON <span>QUALITY</span>
+
+  </div>
+
+  <div class="status">
+    ● <b>SERVER PROCESSING</b>
+  </div>
+
+</header>
+
+<main>
+
+<section class="hero">
+
+  <div class="badge">
+    NEON QUALITY VIDEO ENGINE
+  </div>
+
+  <h1>
+    Improve your <span>video.</span>
+  </h1>
+
+  <div class="subtitle">
+    High quality. TikTok ready. Processed by NEON QUALITY.
+  </div>
+
+</section>
+
+<div class="steps">
+
+  <div class="active">
+    01 VIDEO
+  </div>
+
+  <div>
+    02 PROCESS
+  </div>
+
+  <div>
+    03 DOWNLOAD
+  </div>
+
+</div>
+
+<div class="card">
+
+<!-- UPLOAD -->
+
+<div id="uploadArea" class="upload">
+
+  <div>
+
+    <div class="upload-icon">
+      ↑
+    </div>
+
+    <h2>
+      Choose your video
+    </h2>
+
+    <p>
+      Select a video or drag and drop it here.
+    </p>
+
+    <button
+      type="button"
+      class="btn"
+      id="selectVideoBtn">
+
+      Select video
+
+    </button>
+
+  </div>
+
+</div>
+
+<input
+  id="fileInput"
+  type="file"
+  accept="video/*">
+
+<!-- FILE -->
+
+<div
+  id="fileBox"
+  class="file-box">
+
+  <div
+    id="fileName"
+    class="file-name">
+  </div>
+
+  <div
+    id="fileSize"
+    class="file-size">
+  </div>
+
+</div>
+
+<!-- SOURCE INFO -->
+
+<div
+  id="sourceInfo"
+  class="source-info">
+</div>
+
+<!-- OPTIONS -->
+
+<div
+  id="options"
+  class="options">
+
+  <div class="quality-card">
+
+    <div class="quality-title">
+      MAX QUALITY
+    </div>
+
+    <div class="quality-description">
+      Preserve the original resolution and frame rate.
+      NEON QUALITY will process the video on the server
+      using FFmpeg.
+    </div>
+
+  </div>
+
+  <button
+    type="button"
+    id="startBtn"
+    class="btn start">
+
+    Prepare video
+
+  </button>
+
+</div>
+
+<!-- PROCESSING -->
+
+<div
+  id="processing"
+  class="processing">
+
+  <div class="loader"></div>
+
+  <h2 style="margin-top:25px">
+    Processing your video
+  </h2>
+
+  <p style="color:#777;margin-top:10px">
+    Please keep this page open.
+  </p>
+
+  <div class="progress">
+
+    <div
+      id="progressBar"
+      class="progress-bar">
+    </div>
+
+  </div>
+
+  <div
+    id="percent"
+    class="percent">
+
+    0%
+
+  </div>
+
+  <div
+    id="processStatus"
+    class="process-status">
+
+    Preparing upload...
+
+  </div>
+
+</div>
+
+<!-- RESULT -->
+
+<div
+  id="result"
+  class="result">
+
+  <div class="check">
+    ✓
+  </div>
+
+  <h2>
+    Your video is ready
+  </h2>
+
+  <p>
+    NEON QUALITY processing completed successfully.
+  </p>
+
+  <div class="result-info">
+
+    <div class="result-stat">
+
+      <span>
+        Original
+      </span>
+
+      <b id="originalSize">
+        —
+      </b>
+
+    </div>
+
+    <div class="result-stat">
+
+      <span>
+        Output
+      </span>
+
+      <b id="outputSize">
+        —
+      </b>
+
+    </div>
+
+    <div class="result-stat">
+
+      <span>
+        Codec
+      </span>
+
+      <b>
+        H.264
+      </b>
+
+    </div>
+
+    <div class="result-stat">
+
+      <span>
+        Size change
+      </span>
+
+      <b id="sizeChange">
+        —
+      </b>
+
+    </div>
+
+  </div>
+
+  <div class="notice">
+
+    <div class="notice-title">
+      QUICK REMINDER
+    </div>
+
+    <p>
+      After downloading, upload the processed video
+      directly to TikTok when possible. Avoid unnecessary
+      re-editing or re-encoding if you want to preserve
+      the processed file.
+    </p>
+
+    <p
+      style="margin-top:12px;
+             color:white;
+             font-weight:bold">
+
+      #neonquality #neonqualitymethod
+
+    </p>
+
+  </div>
+
+  <a
+    id="downloadBtn"
+    class="btn download"
+    download="NEON_QUALITY.mp4">
+
+    Download video
+
+  </a>
+
+  <button
+    type="button"
+    id="resetBtn"
+    class="btn reset">
+
+    Process another video
+
+  </button>
+
+</div>
+
+</div>
+
+</main>
+
+<footer>
+
+  <b>NEON QUALITY</b> · High quality video processing.
+
+</footer>
+
+
+<script>
+
+/* =========================================
+   ELEMENTS
+========================================= */
+
+const fileInput =
+  document.getElementById("fileInput");
+
+const selectVideoBtn =
+  document.getElementById("selectVideoBtn");
+
+const uploadArea =
+  document.getElementById("uploadArea");
+
+const fileBox =
+  document.getElementById("fileBox");
+
+const fileName =
+  document.getElementById("fileName");
+
+const fileSize =
+  document.getElementById("fileSize");
+
+const sourceInfo =
+  document.getElementById("sourceInfo");
+
+const options =
+  document.getElementById("options");
+
+const processing =
+  document.getElementById("processing");
+
+const result =
+  document.getElementById("result");
+
+const startBtn =
+  document.getElementById("startBtn");
+
+const progressBar =
+  document.getElementById("progressBar");
+
+const percent =
+  document.getElementById("percent");
+
+const processStatus =
+  document.getElementById("processStatus");
+
+const downloadBtn =
+  document.getElementById("downloadBtn");
+
+const resetBtn =
+  document.getElementById("resetBtn");
+
+const originalSize =
+  document.getElementById("originalSize");
+
+const outputSize =
+  document.getElementById("outputSize");
+
+const sizeChange =
+  document.getElementById("sizeChange");
+
+
+/* =========================================
+   STATE
+========================================= */
+
+let selectedFile = null;
+let outputUrl = null;
+
+
+/* =========================================
+   SELECT BUTTON
+========================================= */
+
+selectVideoBtn.addEventListener(
+  "click",
+  function(e){
+
+    e.stopPropagation();
+
+    fileInput.click();
+
+  }
+);
+
+
+/* =========================================
+   UPLOAD AREA
+========================================= */
+
+uploadArea.addEventListener(
+  "click",
+  function(){
+
+    fileInput.click();
+
+  }
+);
+
+
+/* =========================================
+   FILE INPUT
+========================================= */
+
+fileInput.addEventListener(
+  "change",
+  function(){
+
+    const file =
+      fileInput.files &&
+      fileInput.files[0];
+
+    if(file){
+
+      selectFile(file);
+
+    }
+
+  }
+);
+
+
+/* =========================================
+   DRAG & DROP
+========================================= */
+
+uploadArea.addEventListener(
+  "dragover",
+  function(e){
+
+    e.preventDefault();
+
+    uploadArea.classList.add("drag");
+
+  }
+);
+
+uploadArea.addEventListener(
+  "dragleave",
+  function(){
+
+    uploadArea.classList.remove("drag");
+
+  }
+);
+
+uploadArea.addEventListener(
+  "drop",
+  function(e){
+
+    e.preventDefault();
+
+    uploadArea.classList.remove("drag");
+
+    const file =
+      e.dataTransfer.files &&
+      e.dataTransfer.files[0];
+
+    if(file){
+
+      selectFile(file);
+
+    }
+
+  }
+);
+
+
+/* =========================================
+   SELECT FILE
+========================================= */
+
+function selectFile(file){
+
+  if(
+    !file.type ||
+    !file.type.startsWith("video/")
+  ){
+
+    alert(
+      "Please select a video file."
+    );
+
+    return;
+
+  }
+
+  selectedFile = file;
+
+  fileName.textContent =
+    file.name;
+
+  fileSize.textContent =
+    formatBytes(file.size);
+
+  fileBox.style.display =
+    "block";
+
+  options.style.display =
+    "block";
+
+  uploadArea.style.minHeight =
+    "180px";
+
+  readVideoInfo(file);
+
+}
+
+
+/* =========================================
+   READ VIDEO INFORMATION
+========================================= */
+
+function readVideoInfo(file){
+
+  const url =
+    URL.createObjectURL(file);
+
+  const video =
+    document.createElement("video");
+
+  video.preload =
+    "metadata";
+
+  video.onloadedmetadata =
+    function(){
+
+      sourceInfo.innerHTML =
+        "<b>Source:</b> " +
+        video.videoWidth +
+        " × " +
+        video.videoHeight +
+        " · " +
+        formatDuration(video.duration);
+
+      sourceInfo.style.display =
+        "block";
+
+      URL.revokeObjectURL(url);
+
+    };
+
+  video.onerror =
+    function(){
+
+      URL.revokeObjectURL(url);
+
+      sourceInfo.style.display =
+        "none";
+
+    };
+
+  video.src =
+    url;
+
+}
+
+
+/* =========================================
+   PROGRESS
+========================================= */
+
+function setProgress(
+  value,
+  message
+){
+
+  const p =
+    Math.max(
+      0,
+      Math.min(
+        100,
+        Math.round(value)
+      )
+    );
+
+  progressBar.style.width =
+    p + "%";
+
+  percent.textContent =
+    p + "%";
+
+  if(message){
+
+    processStatus.textContent =
+      message;
+
+  }
+
+}
+
+
+/* =========================================
+   START PROCESS
+========================================= */
+
+startBtn.addEventListener(
+  "click",
+  function(){
+
+    if(!selectedFile){
+
+      return;
+
+    }
+
+    startBtn.disabled =
+      true;
+
+    uploadArea.style.display =
+      "none";
+
+    fileBox.style.display =
+      "none";
+
+    sourceInfo.style.display =
+      "none";
+
+    options.style.display =
+      "none";
+
+    processing.style.display =
+      "block";
+
+    result.style.display =
+      "none";
+
+    setProgress(
+      2,
+      "Preparing upload..."
+    );
+
+
+    /*
+      IMPORTANT
+
+      This sends the video to the
+      Python FastAPI backend.
+
+      Backend endpoint:
+      POST /process
+    */
+
+    const formData =
+      new FormData();
+
+    formData.append(
+      "file",
+      selectedFile
+    );
+
+
+    const xhr =
+      new XMLHttpRequest();
+
+
+    /*
+      Python backend URL
+
+      When frontend and backend are
+      deployed together, use /process.
+
+      Example:
+      https://your-domain.com/process
+    */
+
+    xhr.open(
+      "POST",
+      "/process"
+    );
+
+
+    /*
+      Upload progress
+    */
+
+    xhr.upload.onprogress =
+      function(event){
+
+        if(event.lengthComputable){
+
+          const uploadPercent =
+            (
+              event.loaded /
+              event.total
+            ) * 100;
+
+          const p =
+            uploadPercent * 0.35;
+
+          setProgress(
+            p,
+            "Uploading video..."
+          );
+
+        }
+
+      };
+
+
+    /*
+      Server response
+    */
+
+    xhr.onload =
+      function(){
+
+        if(xhr.status < 200 ||
+           xhr.status >= 300){
+
+          handleError(
+            "Server error: " +
+            xhr.status
+          );
+
+          return;
+
+        }
+
+
+        setProgress(
+          92,
+          "Receiving processed video..."
+        );
+
+
+        const blob =
+          xhr.response;
+
+
+        if(
+          !blob ||
+          blob.size === 0
+        ){
+
+          handleError(
+            "Server returned an empty video."
+          );
+
+          return;
+
+        }
+
+
+        if(outputUrl){
+
+          URL.revokeObjectURL(
+            outputUrl
+          );
+
+        }
+
+
+        outputUrl =
+          URL.createObjectURL(
+            blob
+          );
+
+
+        downloadBtn.href =
+          outputUrl;
+
+        downloadBtn.download =
+          "NEON_QUALITY.mp4";
+
+
+        /*
+          Statistics
+        */
+
+        originalSize.textContent =
+          formatBytes(
+            selectedFile.size
+          );
+
+        outputSize.textContent =
+          formatBytes(
+            blob.size
+          );
+
+
+        const difference =
+          selectedFile.size -
+          blob.size;
+
+
+        const percentage =
+          selectedFile.size > 0
+            ? (
+                difference /
+                selectedFile.size
+              ) * 100
+            : 0;
+
+
+        if(difference > 0){
+
+          sizeChange.textContent =
+            percentage.toFixed(1) +
+            "% smaller";
+
+        }else{
+
+          sizeChange.textContent =
+            Math.abs(
+              percentage
+            ).toFixed(1) +
+            "% larger";
+
+        }
+
+
+        setProgress(
+          100,
+          "Complete."
+        );
+
+
+        setTimeout(
+          function(){
+
+            processing.style.display =
+              "none";
+
+            result.style.display =
+              "block";
+
+            startBtn.disabled =
+              false;
+
+          },
+          400
+        );
+
+      };
+
+
+    /*
+      Receive binary MP4
+    */
+
+    xhr.responseType =
+      "blob";
+
+
+    /*
+      Network error
+    */
+
+    xhr.onerror =
+      function(){
+
+        handleError(
+          "Network error. Please check your connection."
+        );
+
+      };
+
+
+    /*
+      Timeout
+    */
+
+    xhr.ontimeout =
+      function(){
+
+        handleError(
+          "Upload timed out."
+        );
+
+      };
+
+
+    /*
+      Send video
+    */
+
+    xhr.send(
+      formData
+    );
+
+  }
+);
+
+
+/* =========================================
+   ERROR
+========================================= */
+
+function handleError(message){
+
+  console.error(
+    "NEON QUALITY:",
+    message
+  );
+
+  processing.style.display =
+    "none";
+
+  uploadArea.style.display =
+    "flex";
+
+  uploadArea.style.minHeight =
+    "310px";
+
+  fileBox.style.display =
+    "block";
+
+  options.style.display =
+    "block";
+
+  startBtn.disabled =
+    false;
+
+  setProgress(
+    0,
+    "Preparing upload..."
+  );
+
+  alert(
+    "NEON QUALITY\n\n" +
+    message
+  );
+
+}
+
+
+/* =========================================
+   RESET
+========================================= */
+
+resetBtn.addEventListener(
+  "click",
+  function(){
+
+    selectedFile =
+      null;
+
+    fileInput.value =
+      "";
+
+    if(outputUrl){
+
+      URL.revokeObjectURL(
+        outputUrl
+      );
+
+      outputUrl =
+        null;
+
+    }
+
+    result.style.display =
+      "none";
+
+    processing.style.display =
+      "none";
+
+    uploadArea.style.display =
+      "flex";
+
+    uploadArea.style.minHeight =
+      "310px";
+
+    options.style.display =
+      "none";
+
+    fileBox.style.display =
+      "none";
+
+    sourceInfo.style.display =
+      "none";
+
+    progressBar.style.width =
+      "0%";
+
+    percent.textContent =
+      "0%";
+
+    processStatus.textContent =
+      "Preparing upload...";
+
+    originalSize.textContent =
+      "—";
+
+    outputSize.textContent =
+      "—";
+
+    sizeChange.textContent =
+      "—";
+
+    startBtn.disabled =
+      false;
+
+  }
+);
+
+
+/* =========================================
+   FORMAT BYTES
+========================================= */
+
+function formatBytes(bytes){
+
+  if(bytes === 0){
+
+    return "0 Bytes";
+
+  }
+
+  const sizes = [
+    "Bytes",
+    "KB",
+    "MB",
+    "GB"
+  ];
+
+  const i =
+    Math.floor(
+      Math.log(bytes) /
+      Math.log(1024)
+    );
+
+  return (
+    parseFloat(
+      (
+        bytes /
+        Math.pow(
+          1024,
+          i
+        )
+      ).toFixed(2)
+    )
+    +
+    " "
+    +
+    sizes[i]
+  );
+
+}
+
+
+/* =========================================
+   FORMAT DURATION
+========================================= */
+
+function formatDuration(seconds){
+
+  if(
+    !isFinite(seconds)
+  ){
+
+    return "Unknown duration";
+
+  }
+
+  const total =
+    Math.floor(seconds);
+
+  const minutes =
+    Math.floor(
+      total / 60
+    );
+
+  const secs =
+    total % 60;
+
+  return (
+    minutes +
+    ":" +
+    String(secs).padStart(
+      2,
+      "0"
+    )
+  );
+
+}
+
+</script>
+
+</body>
+</html>
     <label for="videoInput">
       <div class="upload-area">
         <p style="font-size: 14px; color: #cbd5e1;">ဗီဒီယို ရွေးချယ်ရန် နှိပ်ပါ</p>
