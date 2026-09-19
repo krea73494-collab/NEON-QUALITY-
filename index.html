@@ -86,6 +86,7 @@
       font-size: 13px;
       color: #cbd5e1;
       margin-top: 10px;
+      word-break: break-word;
     }
     .dl-btn {
       display: none;
@@ -110,6 +111,101 @@
 
     <label for="videoInput">
       <div class="upload-area">
+        <p style="font-size: 14px; color: #cbd5e1;">ဗီဒီယို ရွေးချယ်ရန် နှိပ်ပါ</p>
+        <span class="btn">Video File ရွေးမည်</span>
+      </div>
+    </label>
+    <input type="file" id="videoInput" accept="video/*" onchange="processVideo()">
+
+    <div class="progress-box" id="progressBox">
+      <div id="status">FFmpeg Core Engine ရယူနေပါသည်...</div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progressBar"></div>
+      </div>
+    </div>
+
+    <a id="downloadBtn" class="dl-btn" href="#" download="tiktok_hd_video.mp4">HD Video ဒေါင်းလုဒ်ဆွဲရန်</a>
+  </div>
+
+  <script>
+    const { createFFmpeg, fetchFile } = FFmpeg;
+    const ffmpeg = createFFmpeg({
+      log: true,
+      corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js'
+    });
+
+    async function processVideo() {
+      const input = document.getElementById('videoInput');
+      const file = input.files[0];
+      if (!file) return;
+
+      const progressBox = document.getElementById('progressBox');
+      const progressBar = document.getElementById('progressBar');
+      const status = document.getElementById('status');
+      const downloadBtn = document.getElementById('downloadBtn');
+
+      progressBox.style.display = 'block';
+      downloadBtn.style.display = 'none';
+      progressBar.style.width = '0%';
+      status.innerText = 'FFmpeg Engine ကို စတင်တင်ယူနေပါသည်...';
+
+      try {
+        if (!ffmpeg.isLoaded()) {
+          await ffmpeg.load();
+        }
+
+        status.innerText = 'ဗီဒီယိုဖိုင်ကို စစ်ဆေးနေပါသည်...';
+
+        ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(file));
+
+        ffmpeg.setProgress(({ ratio }) => {
+          const percent = Math.round(ratio * 100);
+          if (percent >= 0 && percent <= 100) {
+            progressBar.style.width = percent + '%';
+            status.innerText = `HD Preset ဖြင့် Compress/Optimize လုပ်နေသည်: ${percent}%`;
+          }
+        });
+
+        status.innerText = 'Compressing & Sharpening ပြုလုပ်နေသည်... (ခဏစောင့်ပါ)';
+
+        // ပြင်ဆင်ထားသော FFmpeg Arguments
+        await ffmpeg.run(
+          '-i', 'input.mp4',
+          '-vf', 'scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black,unsharp=5:5:1.0:5:5:0.0',
+          '-c:v', 'libx264',
+          '-profile:v', 'high',
+          '-level:v', '4.2',
+          '-crf', '18',
+          '-preset', 'ultrafast',
+          '-r', '60',
+          '-g', '120',
+          '-b:v', '12M',
+          '-maxrate', '14M', // Separated parameter
+          '-bufsize', '28M', // Separated parameter
+          '-pix_fmt', 'yuv420p',
+          '-c:a', 'aac',
+          '-b:a', '192k',
+          'output.mp4'
+        );
+
+        status.innerText = 'Convert လုပ်ခြင်း အောင်မြင်ပါပြီ!';
+        progressBar.style.width = '100%';
+
+        const data = ffmpeg.FS('readFile', 'output.mp4');
+        const videoBlob = new Blob([data.buffer], { type: 'video/mp4' });
+        const videoUrl = URL.createObjectURL(videoBlob);
+
+        downloadBtn.href = videoUrl;
+        downloadBtn.style.display = 'block';
+
+      } catch (error) {
+        console.error("FFmpeg Error:", error);
+        status.innerText = 'Error: ' + (error.message || 'Convert လုပ်ရာတွင် အမှားအယွင်း ရှိပါသည်။');
+      }
+    }
+  </script>
+</body>
+</html>
         <p style="font-size: 14px; color: #cbd5e1;">ဗီဒီယို ရွေးချယ်ရန် နှိပ်ပါ</p>
         <span class="btn">Video File ရွေးမည်</span>
       </div>
