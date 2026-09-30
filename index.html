@@ -1,2053 +1,455 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>NEON QUALITY — Video Quality</title>
-
-<style>
-
-*{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
-}
-
-:root{
-  --red:#e50920;
-  --red2:#ff1830;
-  --white:#fff;
-  --black:#070707;
-  --line:#292929;
-}
-
-body{
-  font-family:Arial,Helvetica,sans-serif;
-  background:#070707;
-  color:white;
-  min-height:100vh;
-  overflow-x:hidden;
-}
-
-/* GALAXY */
-
-.galaxy{
-  position:fixed;
-  inset:0;
-  overflow:hidden;
-  pointer-events:none;
-  z-index:-1;
-
-  background:
-    radial-gradient(
-      circle at 20% 20%,
-      rgba(229,9,32,.12),
-      transparent 28%
-    ),
-    radial-gradient(
-      circle at 80% 70%,
-      rgba(255,30,50,.08),
-      transparent 30%
-    ),
-    #070707;
-}
-
-.galaxy::before,
-.galaxy::after{
-  content:"";
-  position:absolute;
-  width:500px;
-  height:500px;
-  border-radius:50%;
-  left:50%;
-  top:45%;
-  transform:translate(-50%,-50%);
-  border:1px solid rgba(255,255,255,.08);
-
-  box-shadow:
-    0 0 80px rgba(229,9,32,.12),
-    inset 0 0 80px rgba(229,9,32,.06);
-
-  animation:spin 30s linear infinite;
-}
-
-.galaxy::after{
-  width:800px;
-  height:250px;
-
-  transform:
-    translate(-50%,-50%)
-    rotate(-25deg);
-
-  animation:spin2 45s linear infinite;
-}
-
-@keyframes spin{
-  to{
-    transform:
-      translate(-50%,-50%)
-      rotate(360deg);
-  }
-}
-
-@keyframes spin2{
-  to{
-    transform:
-      translate(-50%,-50%)
-      rotate(335deg);
-  }
-}
-
-.stars{
-  position:absolute;
-  inset:0;
-
-  background-image:
-    radial-gradient(
-      circle,
-      #fff 1px,
-      transparent 1.5px
-    ),
-    radial-gradient(
-      circle,
-      #e50920 1px,
-      transparent 1.5px
-    );
-
-  background-size:
-    110px 110px,
-    170px 170px;
-
-  background-position:
-    10px 20px,
-    50px 80px;
-
-  opacity:.18;
-
-  animation:
-    stars 25s linear infinite;
-}
-
-@keyframes stars{
-  from{
-    transform:translateY(0);
-  }
-
-  to{
-    transform:translateY(-110px);
-  }
-}
-
-/* HEADER */
-
-header{
-  width:min(1100px,92%);
-  margin:auto;
-  padding:25px 0 15px;
-
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-}
-
-.logo{
-  display:flex;
-  align-items:center;
-  gap:12px;
-
-  font-size:25px;
-  font-weight:900;
-  letter-spacing:-1px;
-}
-
-.logo-mark{
-  width:42px;
-  height:42px;
-
-  border:2px solid var(--red);
-  border-radius:50%;
-
-  position:relative;
-
-  box-shadow:
-    0 0 20px rgba(229,9,32,.4);
-}
-
-.logo-mark::before{
-  content:"";
-
-  position:absolute;
-
-  width:55px;
-  height:18px;
-
-  border:1px solid var(--red);
-  border-radius:50%;
-
-  top:10px;
-  left:-9px;
-
-  transform:rotate(-25deg);
-}
-
-.logo-mark::after{
-  content:"";
-
-  position:absolute;
-
-  width:10px;
-  height:10px;
-
-  background:var(--red);
-  border-radius:50%;
-
-  left:15px;
-  top:15px;
-}
-
-.logo span{
-  color:var(--red);
-}
-
-.status{
-  font-size:12px;
-  color:#bbb;
-}
-
-.status b{
-  color:#48e88a;
-}
-
-/* MAIN */
-
-main{
-  width:min(900px,92%);
-  margin:35px auto 80px;
-}
-
-.hero{
-  text-align:center;
-  margin-bottom:35px;
-}
-
-.badge{
-  display:inline-block;
-
-  color:var(--red2);
-
-  font-size:11px;
-  font-weight:bold;
-
-  letter-spacing:3px;
-
-  margin-bottom:15px;
-}
-
-h1{
-  font-size:clamp(42px,8vw,76px);
-
-  line-height:.95;
-
-  letter-spacing:-4px;
-
-  font-weight:900;
-}
-
-h1 span{
-  color:var(--red);
-}
-
-.subtitle{
-  color:#999;
-
-  margin-top:18px;
-
-  font-size:17px;
-}
-
-/* STEPS */
-
-.steps{
-  display:flex;
-  justify-content:center;
-
-  gap:35px;
-
-  margin:30px 0;
-
-  color:#555;
-
-  font-size:12px;
-  font-weight:bold;
-}
-
-.steps .active{
-  color:white;
-}
-
-/* CARD */
-
-.card{
-  background:rgba(15,15,15,.92);
-
-  border:1px solid var(--line);
-
-  border-radius:24px;
-
-  padding:30px;
-
-  box-shadow:
-    0 25px 80px rgba(0,0,0,.5);
-}
-
-/* UPLOAD */
-
-.upload{
-  border:2px dashed #4b4b4b;
-
-  border-radius:20px;
-
-  min-height:310px;
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  text-align:center;
-
-  cursor:pointer;
-
-  transition:.25s;
-}
-
-.upload:hover,
-.upload.drag{
-  border-color:var(--red);
-
-  background:
-    rgba(229,9,32,.04);
-}
-
-.upload-icon{
-  width:80px;
-  height:80px;
-
-  background:var(--red);
-
-  border-radius:50%;
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  margin:0 auto 25px;
-
-  font-size:36px;
-
-  box-shadow:
-    0 0 35px rgba(229,9,32,.25);
-}
-
-.upload h2{
-  font-size:25px;
-
-  margin-bottom:10px;
-}
-
-.upload p{
-  color:#888;
-
-  margin-bottom:25px;
-}
-
-.btn{
-  border:0;
-
-  border-radius:12px;
-
-  padding:16px 28px;
-
-  background:var(--red);
-
-  color:white;
-
-  font-size:15px;
-
-  font-weight:800;
-
-  cursor:pointer;
-
-  text-decoration:none;
-
-  display:inline-block;
-}
-
-.btn:hover{
-  background:var(--red2);
-}
-
-.btn:disabled{
-  opacity:.5;
-  cursor:not-allowed;
-}
-
-input[type=file]{
-  display:none;
-}
-
-/* FILE */
-
-.file-box{
-  display:none;
-
-  margin-top:20px;
-
-  padding:18px;
-
-  border:1px solid var(--line);
-
-  border-radius:15px;
-
-  background:#0b0b0b;
-}
-
-.file-name{
-  font-weight:bold;
-
-  word-break:break-all;
-}
-
-.file-size{
-  color:#777;
-
-  font-size:12px;
-
-  margin-top:6px;
-}
-
-/* SOURCE INFO */
-
-.source-info{
-  display:none;
-
-  margin-top:10px;
-
-  padding:12px 15px;
-
-  border-radius:12px;
-
-  background:#0b0b0b;
-
-  border:1px solid #252525;
-
-  color:#888;
-
-  font-size:12px;
-
-  line-height:1.7;
-}
-
-.source-info b{
-  color:#ddd;
-}
-
-/* OPTIONS */
-
-.options{
-  display:none;
-
-  margin-top:20px;
-}
-
-.quality-card{
-  padding:18px;
-
-  border:1px solid var(--red);
-
-  border-radius:14px;
-
-  background:
-    rgba(229,9,32,.07);
-}
-
-.quality-title{
-  font-size:14px;
-  font-weight:900;
-}
-
-.quality-description{
-  color:#888;
-  font-size:12px;
-  margin-top:6px;
-  line-height:1.6;
-}
-
-.start{
-  width:100%;
-  margin-top:20px;
-}
-
-/* PROCESS */
-
-.processing{
-  display:none;
-
-  text-align:center;
-
-  padding:55px 20px;
-}
-
-.loader{
-  width:70px;
-  height:70px;
-
-  border:4px solid #333;
-
-  border-top-color:var(--red);
-
-  border-radius:50%;
-
-  margin:auto;
-
-  animation:
-    load 1s linear infinite;
-}
-
-@keyframes load{
-  to{
-    transform:rotate(360deg);
-  }
-}
-
-.progress{
-  width:100%;
-
-  height:8px;
-
-  background:#292929;
-
-  border-radius:20px;
-
-  margin:30px 0 12px;
-
-  overflow:hidden;
-}
-
-.progress-bar{
-  width:0%;
-
-  height:100%;
-
-  background:var(--red);
-
-  transition:.3s;
-}
-
-.percent{
-  color:var(--red);
-
-  font-weight:bold;
-}
-
-.process-status{
-  color:#777;
-
-  font-size:12px;
-
-  margin-top:8px;
-}
-
-/* RESULT */
-
-.result{
-  display:none;
-
-  text-align:center;
-}
-
-.check{
-  width:80px;
-  height:80px;
-
-  border-radius:50%;
-
-  background:var(--red);
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  margin:0 auto 25px;
-
-  font-size:38px;
-
-  box-shadow:
-    0 0 40px rgba(229,9,32,.25);
-}
-
-.result h2{
-  font-size:34px;
-
-  margin-bottom:10px;
-}
-
-.result p{
-  color:#888;
-}
-
-.result-info{
-  margin:20px auto;
-
-  max-width:500px;
-
-  display:grid;
-
-  grid-template-columns:
-    1fr 1fr;
-
-  gap:10px;
-}
-
-.result-stat{
-  padding:14px;
-
-  background:#0b0b0b;
-
-  border:1px solid #292929;
-
-  border-radius:12px;
-}
-
-.result-stat span{
-  display:block;
-
-  color:#666;
-
-  font-size:10px;
-
-  text-transform:uppercase;
-
-  margin-bottom:5px;
-}
-
-.result-stat b{
-  font-size:14px;
-}
-
-.notice{
-  margin:28px auto;
-
-  max-width:600px;
-
-  text-align:left;
-
-  padding:22px;
-
-  border:1px solid #333;
-
-  border-left:3px solid var(--red);
-
-  border-radius:14px;
-
-  background:#0b0b0b;
-}
-
-.notice-title{
-  color:var(--red);
-
-  font-size:11px;
-
-  font-weight:bold;
-
-  letter-spacing:2px;
-
-  margin-bottom:10px;
-}
-
-.notice p{
-  color:#bbb;
-
-  line-height:1.7;
-}
-
-.download{
-  width:100%;
-
-  max-width:500px;
-
-  font-size:17px;
-}
-
-.reset{
-  display:block;
-
-  margin:18px auto;
-
-  background:transparent;
-
-  border:1px solid #333;
-
-  color:#aaa;
-}
-
-/* FOOTER */
-
-footer{
-  text-align:center;
-
-  color:#666;
-
-  font-size:12px;
-
-  padding:30px;
-}
-
-footer b{
-  color:var(--red);
-}
-
-/* MOBILE */
-
-@media(max-width:600px){
-
-  header{
-    padding-top:18px;
-  }
-
-  .logo{
-    font-size:20px;
-  }
-
-  .logo-mark{
-    width:34px;
-    height:34px;
-  }
-
-  .status{
-    display:none;
-  }
-
-  h1{
-    letter-spacing:-2px;
-  }
-
-  .card{
-    padding:15px;
-
-    border-radius:18px;
-  }
-
-  .steps{
-    gap:15px;
-  }
-
-  .result-info{
-    grid-template-columns:1fr;
-  }
-
-}
-
-</style>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClearBoost — TikTok Video Optimizer</title>
+
+  <style>
+    :root {
+      --bg: #0a0a0d;
+      --card: #15151a;
+      --card-2: #1b1a22;
+      --line: #2b2b34;
+      --text: #f6f5fb;
+      --muted: #9d9da9;
+      --purple: #7a5cff;
+      --purple-2: #a997ff;
+      --danger: #ff9da7;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 50% -10%, #302452 0%, transparent 42%),
+        var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .container {
+      width: min(100% - 28px, 920px);
+      margin: auto;
+      padding: 24px 0 42px;
+    }
+
+    .brand {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 38px;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .brand-logo {
+      display: grid;
+      place-items: center;
+      width: 31px;
+      height: 31px;
+      border: 1px solid var(--purple-2);
+      border-radius: 8px;
+      background: #191428;
+      color: var(--purple-2);
+      font-size: 11px;
+    }
+
+    .hero {
+      max-width: 680px;
+      margin: auto;
+      text-align: center;
+    }
+
+    .tag {
+      margin: 0 0 10px;
+      color: var(--purple-2);
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(34px, 10vw, 64px);
+      line-height: 1.05;
+      letter-spacing: -2px;
+    }
+
+    .sub {
+      margin: 17px auto 0;
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 14px;
+    }
+
+    .steps {
+      display: flex;
+      justify-content: center;
+      gap: 13px;
+      margin: 34px 0 19px;
+      color: #787783;
+      font-size: 11px;
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .step b {
+      display: grid;
+      width: 22px;
+      height: 22px;
+      place-items: center;
+      border: 1px solid #43434e;
+      border-radius: 50%;
+      font-size: 10px;
+    }
+
+    .step.active {
+      color: #eeeaff;
+    }
+
+    .step.active b {
+      border-color: var(--purple-2);
+      background: var(--purple);
+      color: white;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(20, 20, 25, 0.94);
+      padding: 21px;
+    }
+
+    .upload-card {
+      min-height: 280px;
+      display: grid;
+      place-items: center;
+      border-style: dashed;
+      text-align: center;
+    }
+
+    .upload-icon {
+      display: grid;
+      width: 58px;
+      height: 58px;
+      place-items: center;
+      margin: 0 auto 15px;
+      border-radius: 50%;
+      background: #241d3e;
+      color: var(--purple-2);
+      font-size: 30px;
+    }
+
+    h2 {
+      margin: 0 0 7px;
+      font-size: 22px;
+      letter-spacing: -0.5px;
+    }
+
+    .muted {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .button {
+      display: inline-flex;
+      min-height: 44px;
+      align-items: center;
+      justify-content: center;
+      margin-top: 18px;
+      border: 0;
+      border-radius: 10px;
+      padding: 0 17px;
+      background: linear-gradient(135deg, #886cff, #6546e7);
+      color: white;
+      font-size: 14px;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .small-note {
+      display: block;
+      margin-top: 15px;
+      color: #70707a;
+      font-size: 11px;
+    }
+
+    #previewWrap {
+      display: none;
+    }
+
+    video {
+      width: 100%;
+      max-height: 420px;
+      border-radius: 12px;
+      background: black;
+    }
+
+    .video-info {
+      margin-top: 13px;
+      color: #b6b5bf;
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .settings-title {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin: 16px 0 7px;
+      color: #cac9d2;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    select {
+      width: 100%;
+      min-height: 45px;
+      border: 1px solid #393944;
+      border-radius: 9px;
+      outline: 0;
+      background: var(--card-2);
+      color: var(--text);
+      padding: 0 11px;
+    }
+
+    .option-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 12px;
+    }
+
+    .optimize {
+      width: 100%;
+    }
+
+    .message {
+      display: none;
+      margin-top: 16px;
+      border-radius: 10px;
+      padding: 13px;
+      background: #211b35;
+      color: #d5ceff;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .privacy {
+      margin: 17px 0 0;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: #121217;
+      color: #9595a0;
+      padding: 14px;
+      text-align: center;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .privacy strong {
+      color: #ebe8fa;
+    }
+
+    @media (min-width: 800px) {
+      .grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .upload-card {
+        min-height: 530px;
+      }
+
+      .settings-card {
+        min-height: 530px;
+      }
+    }
+  </style>
 </head>
 
 <body>
-
-<div class="galaxy">
-  <div class="stars"></div>
-</div>
-
-<header>
-
-  <div class="logo">
-
-    <div class="logo-mark"></div>
-
-    NEON <span>QUALITY</span>
-
-  </div>
-
-  <div class="status">
-    ● <b>SERVER PROCESSING</b>
-  </div>
-
-</header>
-
-<main>
-
-<section class="hero">
-
-  <div class="badge">
-    NEON QUALITY VIDEO ENGINE
-  </div>
-
-  <h1>
-    Improve your <span>video.</span>
-  </h1>
-
-  <div class="subtitle">
-    High quality. TikTok ready. Processed by NEON QUALITY.
-  </div>
-
-</section>
-
-<div class="steps">
-
-  <div class="active">
-    01 VIDEO
-  </div>
-
-  <div>
-    02 PROCESS
-  </div>
-
-  <div>
-    03 DOWNLOAD
-  </div>
-
-</div>
-
-<div class="card">
-
-<!-- UPLOAD -->
-
-<div id="uploadArea" class="upload">
-
-  <div>
-
-    <div class="upload-icon">
-      ↑
+  <main class="container">
+    <div class="brand">
+      <span class="brand-logo">CB</span>
+      ClearBoost
     </div>
 
-    <h2>
-      Choose your video
-    </h2>
+    <section class="hero">
+      <p class="tag">LOCAL VIDEO OPTIMIZER</p>
+      <h1>Make your TikTok uploads look clearer.</h1>
+      <p class="sub">
+        Video ကို 1080×1920 MP4 format အတွက် optimize လုပ်ရန် design လုပ်ထားသော
+        CompressBase-style website prototype ဖြစ်ပါတယ်။
+      </p>
+    </section>
 
-    <p>
-      Select a video or drag and drop it here.
+    <section class="steps">
+      <div class="step active"><b>1</b> Video</div>
+      <div class="step"><b>2</b> Method</div>
+      <div class="step"><b>3</b> Download</div>
+    </section>
+
+    <section class="grid">
+      <section class="card upload-card">
+        <div id="uploadArea">
+          <div class="upload-icon">↑</div>
+          <h2>Choose your video</h2>
+          <p class="muted">MP4, MOV, WebM video ကိုရွေးပါ</p>
+
+          <label class="button" for="videoInput">Browse video</label>
+          <input id="videoInput" type="file" accept="video/*" hidden />
+
+          <span class="small-note">Preview ကိုဖုန်းထဲမှာပဲဖွင့်ပေးပါမယ်</span>
+        </div>
+
+        <div id="previewWrap">
+          <video id="videoPreview" controls></video>
+          <p id="videoInfo" class="video-info"></p>
+          <label class="button" for="videoInput">Change video</label>
+        </div>
+      </section>
+
+      <section class="card settings-card">
+        <div class="settings-title">
+          <p class="tag">OPTIMIZATION METHOD</p>
+          <h2>Make it upload-ready</h2>
+          <p class="muted">TikTok upload အတွက် setting များရွေးပါ</p>
+        </div>
+
+        <label for="preset">Quality preset</label>
+        <select id="preset">
+          <option>TikTok HD — 1080p balanced</option>
+          <option>High Quality — larger file</option>
+          <option>Small File — faster upload</option>
+        </select>
+
+        <div class="option-grid">
+          <div>
+            <label for="fps">Frame rate</label>
+            <select id="fps">
+              <option>Keep source FPS</option>
+              <option>30 FPS</option>
+              <option>60 FPS</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="sharpen">Sharpen</label>
+            <select id="sharpen">
+              <option>Low — Recommended</option>
+              <option>Off</option>
+              <option>Medium</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="deblock">Deblock</label>
+            <select id="deblock">
+              <option>Low — Recommended</option>
+              <option>Off</option>
+              <option>Medium</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="color">Color</label>
+            <select id="color">
+              <option>Light boost</option>
+              <option>Original</option>
+              <option>Vivid</option>
+            </select>
+          </div>
+        </div>
+
+        <button id="optimizeButton" class="button optimize">
+          ⚡ Optimize Video
+        </button>
+
+        <div id="message" class="message"></div>
+      </section>
+    </section>
+
+    <p class="privacy">
+      <strong>Privacy first.</strong> ဒီ prototype မှာ video ကို server ဆီမတင်ပါ။
+      လက်ရှိ version က video preview နှင့် UI workflow ကို ပြသရန်ဖြစ်ပြီး
+      FFmpeg processing engine မထည့်ရသေးပါ။
     </p>
-
-    <button
-      type="button"
-      class="btn"
-      id="selectVideoBtn">
-
-      Select video
-
-    </button>
-
-  </div>
-
-</div>
-
-<input
-  id="fileInput"
-  type="file"
-  accept="video/*">
-
-<!-- FILE -->
-
-<div
-  id="fileBox"
-  class="file-box">
-
-  <div
-    id="fileName"
-    class="file-name">
-  </div>
-
-  <div
-    id="fileSize"
-    class="file-size">
-  </div>
-
-</div>
-
-<!-- SOURCE INFO -->
-
-<div
-  id="sourceInfo"
-  class="source-info">
-</div>
-
-<!-- OPTIONS -->
-
-<div
-  id="options"
-  class="options">
-
-  <div class="quality-card">
-
-    <div class="quality-title">
-      MAX QUALITY
-    </div>
-
-    <div class="quality-description">
-      Preserve the original resolution and frame rate.
-      NEON QUALITY will process the video on the server
-      using FFmpeg.
-    </div>
-
-  </div>
-
-  <button
-    type="button"
-    id="startBtn"
-    class="btn start">
-
-    Prepare video
-
-  </button>
-
-</div>
-
-<!-- PROCESSING -->
-
-<div
-  id="processing"
-  class="processing">
-
-  <div class="loader"></div>
-
-  <h2 style="margin-top:25px">
-    Processing your video
-  </h2>
-
-  <p style="color:#777;margin-top:10px">
-    Please keep this page open.
-  </p>
-
-  <div class="progress">
-
-    <div
-      id="progressBar"
-      class="progress-bar">
-    </div>
-
-  </div>
-
-  <div
-    id="percent"
-    class="percent">
-
-    0%
-
-  </div>
-
-  <div
-    id="processStatus"
-    class="process-status">
-
-    Preparing upload...
-
-  </div>
-
-</div>
-
-<!-- RESULT -->
-
-<div
-  id="result"
-  class="result">
-
-  <div class="check">
-    ✓
-  </div>
-
-  <h2>
-    Your video is ready
-  </h2>
-
-  <p>
-    NEON QUALITY processing completed successfully.
-  </p>
-
-  <div class="result-info">
-
-    <div class="result-stat">
-
-      <span>
-        Original
-      </span>
-
-      <b id="originalSize">
-        —
-      </b>
-
-    </div>
-
-    <div class="result-stat">
-
-      <span>
-        Output
-      </span>
-
-      <b id="outputSize">
-        —
-      </b>
-
-    </div>
-
-    <div class="result-stat">
-
-      <span>
-        Codec
-      </span>
-
-      <b>
-        H.264
-      </b>
-
-    </div>
-
-    <div class="result-stat">
-
-      <span>
-        Size change
-      </span>
-
-      <b id="sizeChange">
-        —
-      </b>
-
-    </div>
-
-  </div>
-
-  <div class="notice">
-
-    <div class="notice-title">
-      QUICK REMINDER
-    </div>
-
-    <p>
-      After downloading, upload the processed video
-      directly to TikTok when possible. Avoid unnecessary
-      re-editing or re-encoding if you want to preserve
-      the processed file.
-    </p>
-
-    <p
-      style="margin-top:12px;
-             color:white;
-             font-weight:bold">
-
-      #neonquality #neonqualitymethod
-
-    </p>
-
-  </div>
-
-  <a
-    id="downloadBtn"
-    class="btn download"
-    download="NEON_QUALITY.mp4">
-
-    Download video
-
-  </a>
-
-  <button
-    type="button"
-    id="resetBtn"
-    class="btn reset">
-
-    Process another video
-
-  </button>
-
-</div>
-
-</div>
-
-</main>
-
-<footer>
-
-  <b>NEON QUALITY</b> · High quality video processing.
-
-</footer>
-
-
-<script>
-
-/* =========================================
-   ELEMENTS
-========================================= */
-
-const fileInput =
-  document.getElementById("fileInput");
-
-const selectVideoBtn =
-  document.getElementById("selectVideoBtn");
-
-const uploadArea =
-  document.getElementById("uploadArea");
-
-const fileBox =
-  document.getElementById("fileBox");
-
-const fileName =
-  document.getElementById("fileName");
-
-const fileSize =
-  document.getElementById("fileSize");
-
-const sourceInfo =
-  document.getElementById("sourceInfo");
-
-const options =
-  document.getElementById("options");
-
-const processing =
-  document.getElementById("processing");
-
-const result =
-  document.getElementById("result");
-
-const startBtn =
-  document.getElementById("startBtn");
-
-const progressBar =
-  document.getElementById("progressBar");
-
-const percent =
-  document.getElementById("percent");
-
-const processStatus =
-  document.getElementById("processStatus");
-
-const downloadBtn =
-  document.getElementById("downloadBtn");
-
-const resetBtn =
-  document.getElementById("resetBtn");
-
-const originalSize =
-  document.getElementById("originalSize");
-
-const outputSize =
-  document.getElementById("outputSize");
-
-const sizeChange =
-  document.getElementById("sizeChange");
-
-
-/* =========================================
-   STATE
-========================================= */
-
-let selectedFile = null;
-let outputUrl = null;
-
-
-/* =========================================
-   SELECT BUTTON
-========================================= */
-
-selectVideoBtn.addEventListener(
-  "click",
-  function(e){
-
-    e.stopPropagation();
-
-    fileInput.click();
-
-  }
-);
-
-
-/* =========================================
-   UPLOAD AREA
-========================================= */
-
-uploadArea.addEventListener(
-  "click",
-  function(){
-
-    fileInput.click();
-
-  }
-);
-
-
-/* =========================================
-   FILE INPUT
-========================================= */
-
-fileInput.addEventListener(
-  "change",
-  function(){
-
-    const file =
-      fileInput.files &&
-      fileInput.files[0];
-
-    if(file){
-
-      selectFile(file);
-
-    }
-
-  }
-);
-
-
-/* =========================================
-   DRAG & DROP
-========================================= */
-
-uploadArea.addEventListener(
-  "dragover",
-  function(e){
-
-    e.preventDefault();
-
-    uploadArea.classList.add("drag");
-
-  }
-);
-
-uploadArea.addEventListener(
-  "dragleave",
-  function(){
-
-    uploadArea.classList.remove("drag");
-
-  }
-);
-
-uploadArea.addEventListener(
-  "drop",
-  function(e){
-
-    e.preventDefault();
-
-    uploadArea.classList.remove("drag");
-
-    const file =
-      e.dataTransfer.files &&
-      e.dataTransfer.files[0];
-
-    if(file){
-
-      selectFile(file);
-
-    }
-
-  }
-);
-
-
-/* =========================================
-   SELECT FILE
-========================================= */
-
-function selectFile(file){
-
-  if(
-    !file.type ||
-    !file.type.startsWith("video/")
-  ){
-
-    alert(
-      "Please select a video file."
-    );
-
-    return;
-
-  }
-
-  selectedFile = file;
-
-  fileName.textContent =
-    file.name;
-
-  fileSize.textContent =
-    formatBytes(file.size);
-
-  fileBox.style.display =
-    "block";
-
-  options.style.display =
-    "block";
-
-  uploadArea.style.minHeight =
-    "180px";
-
-  readVideoInfo(file);
-
-}
-
-
-/* =========================================
-   READ VIDEO INFORMATION
-========================================= */
-
-function readVideoInfo(file){
-
-  const url =
-    URL.createObjectURL(file);
-
-  const video =
-    document.createElement("video");
-
-  video.preload =
-    "metadata";
-
-  video.onloadedmetadata =
-    function(){
-
-      sourceInfo.innerHTML =
-        "<b>Source:</b> " +
-        video.videoWidth +
-        " × " +
-        video.videoHeight +
-        " · " +
-        formatDuration(video.duration);
-
-      sourceInfo.style.display =
-        "block";
-
-      URL.revokeObjectURL(url);
-
-    };
-
-  video.onerror =
-    function(){
-
-      URL.revokeObjectURL(url);
-
-      sourceInfo.style.display =
-        "none";
-
-    };
-
-  video.src =
-    url;
-
-}
-
-
-/* =========================================
-   PROGRESS
-========================================= */
-
-function setProgress(
-  value,
-  message
-){
-
-  const p =
-    Math.max(
-      0,
-      Math.min(
-        100,
-        Math.round(value)
-      )
-    );
-
-  progressBar.style.width =
-    p + "%";
-
-  percent.textContent =
-    p + "%";
-
-  if(message){
-
-    processStatus.textContent =
-      message;
-
-  }
-
-}
-
-
-/* =========================================
-   START PROCESS
-========================================= */
-
-startBtn.addEventListener(
-  "click",
-  function(){
-
-    if(!selectedFile){
-
-      return;
-
-    }
-
-    startBtn.disabled =
-      true;
-
-    uploadArea.style.display =
-      "none";
-
-    fileBox.style.display =
-      "none";
-
-    sourceInfo.style.display =
-      "none";
-
-    options.style.display =
-      "none";
-
-    processing.style.display =
-      "block";
-
-    result.style.display =
-      "none";
-
-    setProgress(
-      2,
-      "Preparing upload..."
-    );
-
-
-    /*
-      IMPORTANT
-
-      This sends the video to the
-      Python FastAPI backend.
-
-      Backend endpoint:
-      POST /process
-    */
-
-    const formData =
-      new FormData();
-
-    formData.append(
-      "file",
-      selectedFile
-    );
-
-
-    const xhr =
-      new XMLHttpRequest();
-
-
-    /*
-      Python backend URL
-
-      When frontend and backend are
-      deployed together, use /process.
-
-      Example:
-      https://your-domain.com/process
-    */
-
-    xhr.open(
-      "POST",
-      "/process"
-    );
-
-
-    /*
-      Upload progress
-    */
-
-    xhr.upload.onprogress =
-      function(event){
-
-        if(event.lengthComputable){
-
-          const uploadPercent =
-            (
-              event.loaded /
-              event.total
-            ) * 100;
-
-          const p =
-            uploadPercent * 0.35;
-
-          setProgress(
-            p,
-            "Uploading video..."
-          );
-
-        }
-
-      };
-
-
-    /*
-      Server response
-    */
-
-    xhr.onload =
-      function(){
-
-        if(xhr.status < 200 ||
-           xhr.status >= 300){
-
-          handleError(
-            "Server error: " +
-            xhr.status
-          );
-
-          return;
-
-        }
-
-
-        setProgress(
-          92,
-          "Receiving processed video..."
-        );
-
-
-        const blob =
-          xhr.response;
-
-
-        if(
-          !blob ||
-          blob.size === 0
-        ){
-
-          handleError(
-            "Server returned an empty video."
-          );
-
-          return;
-
-        }
-
-
-        if(outputUrl){
-
-          URL.revokeObjectURL(
-            outputUrl
-          );
-
-        }
-
-
-        outputUrl =
-          URL.createObjectURL(
-            blob
-          );
-
-
-        downloadBtn.href =
-          outputUrl;
-
-        downloadBtn.download =
-          "NEON_QUALITY.mp4";
-
-
-        /*
-          Statistics
-        */
-
-        originalSize.textContent =
-          formatBytes(
-            selectedFile.size
-          );
-
-        outputSize.textContent =
-          formatBytes(
-            blob.size
-          );
-
-
-        const difference =
-          selectedFile.size -
-          blob.size;
-
-
-        const percentage =
-          selectedFile.size > 0
-            ? (
-                difference /
-                selectedFile.size
-              ) * 100
-            : 0;
-
-
-        if(difference > 0){
-
-          sizeChange.textContent =
-            percentage.toFixed(1) +
-            "% smaller";
-
-        }else{
-
-          sizeChange.textContent =
-            Math.abs(
-              percentage
-            ).toFixed(1) +
-            "% larger";
-
-        }
-
-
-        setProgress(
-          100,
-          "Complete."
-        );
-
-
-        setTimeout(
-          function(){
-
-            processing.style.display =
-              "none";
-
-            result.style.display =
-              "block";
-
-            startBtn.disabled =
-              false;
-
-          },
-          400
-        );
-
-      };
-
-
-    /*
-      Receive binary MP4
-    */
-
-    xhr.responseType =
-      "blob";
-
-
-    /*
-      Network error
-    */
-
-    xhr.onerror =
-      function(){
-
-        handleError(
-          "Network error. Please check your connection."
-        );
-
-      };
-
-
-    /*
-      Timeout
-    */
-
-    xhr.ontimeout =
-      function(){
-
-        handleError(
-          "Upload timed out."
-        );
-
-      };
-
-
-    /*
-      Send video
-    */
-
-    xhr.send(
-      formData
-    );
-
-  }
-);
-
-
-/* =========================================
-   ERROR
-========================================= */
-
-function handleError(message){
-
-  console.error(
-    "NEON QUALITY:",
-    message
-  );
-
-  processing.style.display =
-    "none";
-
-  uploadArea.style.display =
-    "flex";
-
-  uploadArea.style.minHeight =
-    "310px";
-
-  fileBox.style.display =
-    "block";
-
-  options.style.display =
-    "block";
-
-  startBtn.disabled =
-    false;
-
-  setProgress(
-    0,
-    "Preparing upload..."
-  );
-
-  alert(
-    "NEON QUALITY\n\n" +
-    message
-  );
-
-}
-
-
-/* =========================================
-   RESET
-========================================= */
-
-resetBtn.addEventListener(
-  "click",
-  function(){
-
-    selectedFile =
-      null;
-
-    fileInput.value =
-      "";
-
-    if(outputUrl){
-
-      URL.revokeObjectURL(
-        outputUrl
-      );
-
-      outputUrl =
-        null;
-
-    }
-
-    result.style.display =
-      "none";
-
-    processing.style.display =
-      "none";
-
-    uploadArea.style.display =
-      "flex";
-
-    uploadArea.style.minHeight =
-      "310px";
-
-    options.style.display =
-      "none";
-
-    fileBox.style.display =
-      "none";
-
-    sourceInfo.style.display =
-      "none";
-
-    progressBar.style.width =
-      "0%";
-
-    percent.textContent =
-      "0%";
-
-    processStatus.textContent =
-      "Preparing upload...";
-
-    originalSize.textContent =
-      "—";
-
-    outputSize.textContent =
-      "—";
-
-    sizeChange.textContent =
-      "—";
-
-    startBtn.disabled =
-      false;
-
-  }
-);
-
-
-/* =========================================
-   FORMAT BYTES
-========================================= */
-
-function formatBytes(bytes){
-
-  if(bytes === 0){
-
-    return "0 Bytes";
-
-  }
-
-  const sizes = [
-    "Bytes",
-    "KB",
-    "MB",
-    "GB"
-  ];
-
-  const i =
-    Math.floor(
-      Math.log(bytes) /
-      Math.log(1024)
-    );
-
-  return (
-    parseFloat(
-      (
-        bytes /
-        Math.pow(
-          1024,
-          i
-        )
-      ).toFixed(2)
-    )
-    +
-    " "
-    +
-    sizes[i]
-  );
-
-}
-
-
-/* =========================================
-   FORMAT DURATION
-========================================= */
-
-function formatDuration(seconds){
-
-  if(
-    !isFinite(seconds)
-  ){
-
-    return "Unknown duration";
-
-  }
-
-  const total =
-    Math.floor(seconds);
-
-  const minutes =
-    Math.floor(
-      total / 60
-    );
-
-  const secs =
-    total % 60;
-
-  return (
-    minutes +
-    ":" +
-    String(secs).padStart(
-      2,
-      "0"
-    )
-  );
-
-}
-
-</script>
-
-</body>
-</html>
-    <label for="videoInput">
-      <div class="upload-area">
-        <p style="font-size: 14px; color: #cbd5e1;">ဗီဒီယို ရွေးချယ်ရန် နှိပ်ပါ</p>
-        <span class="btn">Video File ရွေးမည်</span>
-      </div>
-    </label>
-    <input type="file" id="videoInput" accept="video/*" onchange="processVideo()">
-
-    <div class="progress-box" id="progressBox">
-      <div id="status">FFmpeg Core Engine ရယူနေပါသည်...</div>
-      <div class="progress-bar-bg">
-        <div class="progress-bar-fill" id="progressBar"></div>
-      </div>
-    </div>
-
-    <a id="downloadBtn" class="dl-btn" href="#" download="tiktok_hd_video.mp4">HD Video ဒေါင်းလုဒ်ဆွဲရန်</a>
-  </div>
+  </main>
 
   <script>
-    const { createFFmpeg, fetchFile } = FFmpeg;
-    const ffmpeg = createFFmpeg({
-      log: true,
-      corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js'
-    });
+    const input = document.getElementById("videoInput");
+    const preview = document.getElementById("videoPreview");
+    const uploadArea = document.getElementById("uploadArea");
+    const previewWrap = document.getElementById("previewWrap");
+    const videoInfo = document.getElementById("videoInfo");
+    const message = document.getElementById("message");
+    const optimizeButton = document.getElementById("optimizeButton");
 
-    async function processVideo() {
-      const input = document.getElementById('videoInput');
+    input.addEventListener("change", () => {
       const file = input.files[0];
+
       if (!file) return;
 
-      const progressBox = document.getElementById('progressBox');
-      const progressBar = document.getElementById('progressBar');
-      const status = document.getElementById('status');
-      const downloadBtn = document.getElementById('downloadBtn');
-
-      progressBox.style.display = 'block';
-      downloadBtn.style.display = 'none';
-      progressBar.style.width = '0%';
-      status.innerText = 'FFmpeg Engine ကို စတင်တင်ယူနေပါသည်...';
-
-      try {
-        if (!ffmpeg.isLoaded()) {
-          await ffmpeg.load();
-        }
-
-        status.innerText = 'ဗီဒီယိုဖိုင်ကို စစ်ဆေးနေပါသည်...';
-
-        ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(file));
-
-        ffmpeg.setProgress(({ ratio }) => {
-          const percent = Math.round(ratio * 100);
-          if (percent >= 0 && percent <= 100) {
-            progressBar.style.width = percent + '%';
-            status.innerText = `HD Preset ဖြင့် Compress/Optimize လုပ်နေသည်: ${percent}%`;
-          }
-        });
-
-        status.innerText = 'Compressing & Sharpening ပြုလုပ်နေသည်... (ခဏစောင့်ပါ)';
-
-        // ပြင်ဆင်ထားသော FFmpeg Arguments
-        await ffmpeg.run(
-          '-i', 'input.mp4',
-          '-vf', 'scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black,unsharp=5:5:1.0:5:5:0.0',
-          '-c:v', 'libx264',
-          '-profile:v', 'high',
-          '-level:v', '4.2',
-          '-crf', '18',
-          '-preset', 'ultrafast',
-          '-r', '60',
-          '-g', '120',
-          '-b:v', '12M',
-          '-maxrate', '14M', // Separated parameter
-          '-bufsize', '28M', // Separated parameter
-          '-pix_fmt', 'yuv420p',
-          '-c:a', 'aac',
-          '-b:a', '192k',
-          'output.mp4'
-        );
-
-        status.innerText = 'Convert လုပ်ခြင်း အောင်မြင်ပါပြီ!';
-        progressBar.style.width = '100%';
-
-        const data = ffmpeg.FS('readFile', 'output.mp4');
-        const videoBlob = new Blob([data.buffer], { type: 'video/mp4' });
-        const videoUrl = URL.createObjectURL(videoBlob);
-
-        downloadBtn.href = videoUrl;
-        downloadBtn.style.display = 'block';
-
-      } catch (error) {
-        console.error("FFmpeg Error:", error);
-        status.innerText = 'Error: ' + (error.message || 'Convert လုပ်ရာတွင် အမှားအယွင်း ရှိပါသည်။');
+      if (!file.type.startsWith("video/")) {
+        alert("Video file တစ်ခုရွေးပေးပါ။");
+        return;
       }
-    }
-  </script>
-</body>
-</html>
-        <p style="font-size: 14px; color: #cbd5e1;">ဗီဒီယို ရွေးချယ်ရန် နှိပ်ပါ</p>
-        <span class="btn">Video File ရွေးမည်</span>
-      </div>
-    </label>
-    <input type="file" id="videoInput" accept="video/*" onchange="processVideo()">
 
-    <div class="progress-box" id="progressBox">
-      <div id="status">FFmpeg Core Engine ရယူနေပါသည်...</div>
-      <div class="progress-bar-bg">
-        <div class="progress-bar-fill" id="progressBar"></div>
-      </div>
-    </div>
+      preview.src = URL.createObjectURL(file);
+      videoInfo.textContent = file.name + " — " +
+        (file.size / 1024 / 1024).toFixed(1) + " MB";
 
-    <a id="downloadBtn" class="dl-btn" href="#" download="tiktok_hd_video.mp4">HD Video ဒေါင်းလုဒ်ဆွဲရန်</a>
-  </div>
+      uploadArea.style.display = "none";
+      previewWrap.style.display = "block";
 
-  <script>
-    const { createFFmpeg, fetchFile } = FFmpeg;
-    const ffmpeg = createFFmpeg({
-      log: true,
-      corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js'
+      message.style.display = "none";
     });
 
-    async function processVideo() {
-      const input = document.getElementById('videoInput');
-      const file = input.files[0];
-      if (!file) return;
-
-      const progressBox = document.getElementById('progressBox');
-      const progressBar = document.getElementById('progressBar');
-      const status = document.getElementById('status');
-      const downloadBtn = document.getElementById('downloadBtn');
-
-      progressBox.style.display = 'block';
-      downloadBtn.style.display = 'none';
-      progressBar.style.width = '0%';
-      status.innerText = 'FFmpeg Engine ကို စတင်တင်ယူနေပါသည်...';
-
-      try {
-        // FFmpeg Core မတင်ရသေးပါက တင်ခြင်း
-        if (!ffmpeg.isLoaded()) {
-          await ffmpeg.load();
-        }
-
-        status.innerText = 'ဗီဒီယိုဖိုင်ကို စစ်ဆေးနေပါသည်...';
-
-        // FFmpeg ရဲ့ Virtual FileSystem ထဲသို့ ဗီဒီယို ထည့်ခြင်း
-        ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(file));
-
-        // Progress အလိုက် Bar ကို မြှင့်ပေးခြင်း
-        ffmpeg.setProgress(({ ratio }) => {
-          const percent = Math.round(ratio * 100);
-          if (percent >= 0 && percent <= 100) {
-            progressBar.style.width = percent + '%';
-            status.innerText = `HD Preset ဖြင့် Compress/Optimize လုပ်နေသည်: ${percent}%`;
-          }
-        });
-
-        status.innerText = 'Compressing & Sharpening ပြုလုပ်နေသည်... (ခဏစောင့်ပါ)';
-
-        // TikTok HD Optimizer FFmpeg Commands (Sharpening + GOP + Bitrate control)
-        await ffmpeg.run(
-          '-i', 'input.mp4',
-          '-vf', 'scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black,unsharp=5:5:1.0:5:5:0.0',
-          '-c:v', 'libx264',
-          '-profile:v', 'high',
-          '-level:v', '4.2',
-          '-crf', '18',
-          '-preset', 'ultrafast',  // Browser ပေါ်တွင် မြန်ဆန်စေရန် ultrafast/superfast သုံးထားပါသည်
-          '-r', '60',
-          '-g', '120',
-          '-b:v', '12M',
-          '-maxrate 14M',
-          '-bufsize 28M',
-          '-pix_fmt', 'yuv420p',
-          '-c:a', 'aac',
-          '-b:a', '192k',
-          'output.mp4'
-        );
-
-        status.innerText = 'Convert လုပ်ခြင်း အောင်မြင်ပါပြီ!';
-        progressBar.style.width = '100%';
-
-        // ထွက်လာသော ဖိုင်ကို ယူပြီး Download Link ပြုလုပ်ခြင်း
-        const data = ffmpeg.FS('readFile', 'output.mp4');
-        const videoBlob = new Blob([data.buffer], { type: 'video/mp4' });
-        const videoUrl = URL.createObjectURL(videoBlob);
-
-        downloadBtn.href = videoUrl;
-        downloadBtn.style.display = 'block';
-
-      } catch (error) {
-        console.error(error);
-        status.innerText = 'Error: Convert လုပ်ရာတွင် အမှားအယွင်း ရှိပါသည်။';
+    optimizeButton.addEventListener("click", () => {
+      if (!input.files[0]) {
+        message.textContent = "အရင်ဆုံး video တစ်ခုရွေးပေးပါ။";
+        message.style.display = "block";
+        return;
       }
-    }
+
+      const preset = document.getElementById("preset").value;
+      const fps = document.getElementById("fps").value;
+      const sharpen = document.getElementById("sharpen").value;
+      const deblock = document.getElementById("deblock").value;
+      const color = document.getElementById("color").value;
+
+      message.innerHTML =
+        "<strong>Settings ရွေးပြီးပါပြီ။</strong><br>" +
+        "Preset: " + preset + "<br>" +
+        "FPS: " + fps + "<br>" +
+        "Sharpen: " + sharpen + " · Deblock: " + deblock +
+        " · Color: " + color + "<br><br>" +
+        "တကယ်တမ်း video ကို optimize/download လုပ်ရန် FFmpeg processing engine " +
+        "သို့မဟုတ် server-side video processor ကို နောက်အဆင့်တွင် ထည့်ရပါမယ်။";
+
+      message.style.display = "block";
+    });
   </script>
 </body>
 </html>
